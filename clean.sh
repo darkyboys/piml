@@ -1,0 +1,1 @@
+rm -rf test_output.png objects exec_test build
