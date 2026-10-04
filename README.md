@@ -2,9 +2,22 @@
 
 **Precision Image Manipulation Library**
 
-PIML is a C++ image manipulation library focused on precise, selection-based image processing. It provides a small API for working with images, selecting pixels, refining selections, and applying effects to those selections.
+PIML is a lightweight C++ image manipulation library focused on precise, selection-based image processing.
 
-The library is intended to remain lightweight and portable while providing enough control for more advanced image manipulation through its selection system.
+It provides a small API for:
+
+* Loading and writing images
+* Selecting pixels
+* Refining pixel selections
+* Selecting individual color channels
+* Applying effects to the current selection
+* Debugging image operations
+
+PIML is designed around the idea that **selection and effects should remain separate**. This allows the same effect to operate on completely different parts of an image without requiring the effect itself to understand how those pixels were selected.
+
+The library is intended to remain lightweight and portable while providing enough control for increasingly advanced image manipulation.
+
+---
 
 ## Features
 
@@ -21,7 +34,10 @@ The library is intended to remain lightweight and portable while providing enoug
 * Designed for portability
 * Fast image operations
 * Extensible effect system
+* Selection-driven image effects
 * Future support for more complex selection rules
+
+---
 
 ## Requirements
 
@@ -33,6 +49,8 @@ PIML only requires:
 There are no platform-specific dependencies required by the core library.
 
 Because of this, PIML can be built on a wide range of systems, including Linux and environments such as Termux.
+
+---
 
 ## Building
 
@@ -63,9 +81,13 @@ Generated files can be removed with:
 ./clean.sh
 ```
 
-## Basic Usage
+---
+
+# Basic Usage
 
 PIML exposes its main API through `piml.hh` and image I/O through `pimlio.hh`.
+
+A basic program looks like this:
 
 ```cpp
 #include "piml.hh"
@@ -77,16 +99,20 @@ int main() {
 
     image.select(piml::EVERYTHING);
 
-    piml::Effect effect = image;
-
-    effect.brightness(10);
+    image.apply_effect.brightness(10);
 
     piml::pimlio_write(image, "test_output.png");
 
 }
 ```
 
-The image is first loaded from disk and then a selection is created:
+An image is first loaded from disk:
+
+```cpp
+piml::Image image = piml::pimlio_read("img/test.png");
+```
+
+A selection can then be created:
 
 ```cpp
 image.select(piml::EVERYTHING);
@@ -94,15 +120,13 @@ image.select(piml::EVERYTHING);
 
 `EVERYTHING` selects all pixels in the image.
 
-An effect can then be created for the image and applied to the current selection:
+Effects are exposed directly through `Image::apply_effect`:
 
 ```cpp
-piml::Effect effect = image;
-
-effect.brightness(10);
+image.apply_effect.brightness(10);
 ```
 
-Multiple operations can be applied to the same selection.
+There is no need to manually create an `Effect` object.
 
 Finally, the modified image can be written back to disk:
 
@@ -110,9 +134,11 @@ Finally, the modified image can be written back to disk:
 piml::pimlio_write(image, "test_output.png");
 ```
 
-## Pixel Representation
+---
 
-PIML stores each pixel as four `double` values:
+# Pixel Representation
+
+PIML stores each pixel using four `double` values:
 
 ```cpp
 struct Pixel {
@@ -125,21 +151,38 @@ struct Pixel {
 };
 ```
 
-Color channel values are represented internally in the range:
+The channels represent:
+
+* `r` — Red
+* `g` — Green
+* `b` — Blue
+* `a` — Alpha
+
+Color channel values are represented internally using normalized floating-point values:
 
 ```text
 0.0 - 1.0
 ```
 
-This allows image operations to work with normalized floating-point values rather than being tied directly to a particular integer pixel format.
+This allows image operations to work with normalized values rather than being directly tied to a particular integer pixel format.
 
-## Selection
+For example:
 
-Selection is a central part of PIML's design.
+```text
+0.0 = 0%
+0.5 = 50%
+1.0 = 100%
+```
 
-An `Image` maintains a current selection of pixels. Effects operate only on the pixels currently contained in that selection.
+---
 
-The selection system is divided conceptually into two parts:
+# Selection
+
+Selection is the central part of PIML's design.
+
+An `Image` maintains a current selection of pixels. Effects operate on that selection.
+
+The selection system can be understood using three concepts:
 
 ```text
 WHERE → Which pixels?
@@ -147,105 +190,264 @@ WHAT  → Which channel?
 HOW   → Which effect?
 ```
 
-A selection can first be created with `EVERYTHING` and then refined using selection predicates.
+For example:
 
-### Selecting all pixels
+```cpp
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_SMALLER_THAN, 50);
+image.select(piml::CHANNEL_BLUE);
+
+image.apply_effect.brightness(10);
+```
+
+This means:
+
+```text
+WHERE → pixels with luma < 50%
+WHAT  → blue channel
+HOW   → increase brightness
+```
+
+The effect does not need to know why those pixels were selected.
+
+---
+
+## Selecting All Pixels
 
 ```cpp
 image.select(piml::EVERYTHING);
 ```
 
-This initializes the current selection with every pixel in the image.
+`EVERYTHING` initializes the current selection with every pixel in the image.
 
-### Luma-based selection
+It can also be used to start a new selection after a previous selection has already been processed.
 
-PIML can refine the current selection using the average RGB value of each pixel as its luma:
+For example:
 
 ```cpp
-luma = (r + g + b) / 3.0;
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_SMALLER_THAN, 50);
+
+image.apply_effect.brightness(-20);
+
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_GREATER_THAN, 50);
+
+image.apply_effect.brightness(20);
 ```
 
-Alpha does not participate in luma calculations.
+The second `EVERYTHING` starts the second selection from the complete image rather than from the previously filtered selection.
 
-Currently available luma predicates are:
+---
+
+# Luma Selection
+
+PIML provides selection predicates based on pixel luma.
+
+Currently, PIML defines luma as the average of the red, green, and blue channels:
+
+```text
+luma = (r + g + b) / 3.0
+```
+
+Alpha does not participate in the luma calculation.
+
+Because channels are normalized, luma is also represented in the range:
+
+```text
+0.0 - 1.0
+```
+
+Selection thresholds are specified using percentages.
+
+For example:
+
+```cpp
+image.select(piml::WHERE_LUMA_GREATER_THAN, 50);
+```
+
+means:
+
+```text
+luma > 50%
+```
+
+---
+
+## Available Luma Predicates
+
+PIML currently provides:
 
 ```cpp
 piml::WHERE_LUMA_GREATER_THAN
-piml::WHERE_LUMA_SMALLER_THAN
 piml::WHERE_LUMA_GREATER_THAN_OR_EQUALS
+piml::WHERE_LUMA_SMALLER_THAN
 piml::WHERE_LUMA_SMALLER_THAN_OR_EQUALS
-piml::WHERE_LUMA_EQUALS
 piml::WHERE_LUMA_BETWEEN
+piml::WHERE_LUMA_EQUALS
 ```
 
-Threshold values are specified as percentages.
+---
 
-For example:
+## Greater Than
 
 ```cpp
 image.select(piml::EVERYTHING);
 image.select(piml::WHERE_LUMA_GREATER_THAN, 50);
 ```
 
-This selects pixels whose luma is greater than 50%.
+Selects pixels where:
 
-Similarly:
+```text
+luma > 50%
+```
+
+---
+
+## Smaller Than
 
 ```cpp
+image.select(piml::EVERYTHING);
 image.select(piml::WHERE_LUMA_SMALLER_THAN, 50);
 ```
 
-selects pixels whose luma is smaller than 50%.
+Selects pixels where:
 
-### Luma ranges
+```text
+luma < 50%
+```
 
-`WHERE_LUMA_BETWEEN` accepts a lower and upper percentage:
+---
+
+## Greater Than or Equals
+
+```cpp
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_GREATER_THAN_OR_EQUALS, 50);
+```
+
+Selects pixels where:
+
+```text
+luma >= 50%
+```
+
+---
+
+## Smaller Than or Equals
+
+```cpp
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_SMALLER_THAN_OR_EQUALS, 50);
+```
+
+Selects pixels where:
+
+```text
+luma <= 50%
+```
+
+---
+
+## Equals
+
+```cpp
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_EQUALS, 50);
+```
+
+Selects pixels where the calculated luma is equal to the specified value.
+
+---
+
+# Luma Ranges
+
+`WHERE_LUMA_BETWEEN` accepts two percentage values.
+
+The first value is the lower bound and the second value is the upper bound:
 
 ```cpp
 image.select(piml::EVERYTHING);
 image.select(piml::WHERE_LUMA_BETWEEN, 30, 70);
 ```
 
-This selects pixels whose luma is within the inclusive range:
+This selects pixels where:
 
 ```text
 30% <= luma <= 70%
 ```
 
-The lower bound must be supplied first. If the upper bound is smaller than the lower bound, the selection is considered invalid.
+The range is inclusive.
 
-### Selection refinement
+The lower bound must be supplied before the upper bound.
 
-Selection predicates refine the current selection rather than operating independently on the entire image.
+For example:
+
+```cpp
+image.select(piml::WHERE_LUMA_BETWEEN, 70, 30);
+```
+
+is invalid because the upper bound is smaller than the lower bound.
+
+---
+
+# Selection Refinement
+
+Selection predicates refine the **current selection**.
+
+They do not automatically create a new selection from the entire image.
 
 For example:
 
 ```cpp
 image.select(piml::EVERYTHING);
 
-image.select(piml::WHERE_LUMA_GREATER_THAN, 50);
-image.select(piml::WHERE_LUMA_SMALLER_THAN, 80);
+image.select(piml::WHERE_LUMA_GREATER_THAN, 30);
+image.select(piml::WHERE_LUMA_SMALLER_THAN, 70);
 ```
 
-The second predicate operates only on the pixels remaining after the first predicate.
+The resulting selection contains pixels where:
 
-Conceptually, this behaves like:
+```text
+30% < luma < 70%
+```
+
+Conceptually:
 
 ```text
 ALL PIXELS
-    ↓
-LUMA > 50%
-    ↓
-LUMA < 80%
-    ↓
-50% < LUMA < 80%
+    │
+    ▼
+LUMA > 30%
+    │
+    ▼
+LUMA < 70%
+    │
+    ▼
+SELECTED PIXELS
 ```
 
-This allows multiple selection conditions to be composed to create more precise regions.
+This allows multiple selection predicates to be combined.
 
-### Channel selection
+The selection system therefore behaves similarly to a filtering or query system:
 
-PIML can also select which channel an effect should operate on:
+```text
+Select everything
+       ↓
+Apply condition
+       ↓
+Apply another condition
+       ↓
+Apply effect
+```
+
+---
+
+# Channel Selection
+
+PIML separates **pixel selection** from **channel selection**.
+
+Available channel selections are:
 
 ```cpp
 piml::CHANNEL_RED
@@ -254,86 +456,7 @@ piml::CHANNEL_BLUE
 piml::CHANNEL_ALPHA
 ```
 
-For example:
-
-```cpp
-image.select(piml::EVERYTHING);
-image.select(piml::CHANNEL_GREEN);
-
-effect.brightness(-20);
-```
-
-This applies the brightness operation specifically to the selected channel.
-
-Channel selection and pixel selection are separate concepts. A luma predicate determines **which pixels** are selected, while a channel selection determines **which part of those pixels** an effect operates on.
-
-This allows operations such as:
-
-```cpp
-image.select(piml::EVERYTHING);
-image.select(piml::WHERE_LUMA_SMALLER_THAN, 40);
-image.select(piml::CHANNEL_BLUE);
-
-effect.brightness(10);
-```
-
-The effect is therefore applied only to the blue channel of darker pixels.
-
-### Selection reset
-
-Calling:
-
-```cpp
-image.select(piml::EVERYTHING);
-```
-
-can be used to start a new selection from all pixels.
-
-For example:
-
-```cpp
-image.select(piml::EVERYTHING);
-image.select(piml::WHERE_LUMA_SMALLER_THAN, 50);
-
-effect.brightness(-20);
-
-image.select(piml::EVERYTHING);
-image.select(piml::WHERE_LUMA_GREATER_THAN, 50);
-
-effect.brightness(20);
-```
-
-The first operation affects darker pixels, while the second operation starts from the complete image and affects brighter pixels.
-
-## Effects
-
-Effects are provided through `piml::Effect`.
-
-For example:
-
-```cpp
-piml::Effect effect = image;
-
-effect.brightness(10);
-```
-
-Effects operate on the image's current selection.
-
-The effect system is intentionally independent of the selection system. Effects do not need to know why a pixel was selected or which selection predicate was used.
-
-### Brightness
-
-The brightness effect accepts a percentage value:
-
-```cpp
-effect.brightness(10);
-```
-
-Positive values increase brightness, while negative values decrease it.
-
-The value is normalized and constrained to the supported range internally.
-
-Brightness can operate on the normal RGB channels or on a specifically selected channel.
+A channel selection determines which channel an effect operates on for the currently selected pixels.
 
 For example:
 
@@ -341,32 +464,16 @@ For example:
 image.select(piml::EVERYTHING);
 image.select(piml::CHANNEL_GREEN);
 
-effect.brightness(-20);
+image.apply_effect.brightness(-20);
 ```
 
-Effects only operate on the pixels and channels currently selected.
+This selects every pixel but applies the brightness operation only to the green channel.
 
-### Selection-driven effects
+---
 
-Because effects are independent from selection, the same effect can be used for many different operations.
+## Combining Pixel and Channel Selection
 
-For example, a simple contrast-like operation can be created using luma selection:
-
-```cpp
-image.select(piml::EVERYTHING);
-image.select(piml::WHERE_LUMA_SMALLER_THAN, 50);
-
-effect.brightness(-20);
-
-image.select(piml::EVERYTHING);
-image.select(piml::WHERE_LUMA_GREATER_THAN, 50);
-
-effect.brightness(20);
-```
-
-This darkens pixels below 50% luma and brightens pixels above 50% luma.
-
-More advanced color-grading operations can be constructed by combining luma selection with channel selection.
+Pixel and channel selection can be combined.
 
 For example:
 
@@ -375,28 +482,149 @@ image.select(piml::EVERYTHING);
 image.select(piml::WHERE_LUMA_SMALLER_THAN, 40);
 image.select(piml::CHANNEL_BLUE);
 
-effect.brightness(10);
-
-image.select(piml::EVERYTHING);
-image.select(piml::WHERE_LUMA_GREATER_THAN, 60);
-image.select(piml::CHANNEL_RED);
-
-effect.brightness(10);
+image.apply_effect.brightness(10);
 ```
 
-This demonstrates the general PIML model:
+This can be interpreted as:
 
 ```text
-WHERE → select pixels
-WHAT  → select channel
-HOW   → apply effect
+WHERE → luma < 40%
+WHAT  → blue channel
+HOW   → brightness +10
 ```
 
-## Image I/O
+Only the blue channel of pixels below 40% luma is modified.
+
+This separation allows effects to remain simple while the selection system provides increasingly precise control.
+
+---
+
+# Effects
+
+Effects are exposed through:
+
+```cpp
+image.apply_effect
+```
+
+For example:
+
+```cpp
+image.apply_effect.brightness(10);
+```
+
+The `Effect` object is associated with the `Image` and operates on that image's current selection.
+
+Users therefore do not need to manually construct an `Effect` object.
+
+The selection determines **where** an effect operates, while the effect determines **what operation** is performed.
+
+---
+
+# Brightness
+
+The currently available brightness effect is:
+
+```cpp
+image.apply_effect.brightness(10);
+```
+
+The effect accepts a percentage value.
+
+Positive values increase brightness:
+
+```cpp
+image.apply_effect.brightness(20);
+```
+
+Negative values decrease brightness:
+
+```cpp
+image.apply_effect.brightness(-20);
+```
+
+The value is normalized and constrained internally.
+
+When no channel is specifically selected, brightness operates on the RGB channels of the selected pixels.
+
+When a channel is selected, brightness operates only on that channel.
+
+For example:
+
+```cpp
+image.select(piml::EVERYTHING);
+image.select(piml::CHANNEL_RED);
+
+image.apply_effect.brightness(20);
+```
+
+This affects only the red channel.
+
+---
+
+# Selection-Driven Processing
+
+One of the main goals of PIML is to allow complex image operations to be constructed by combining simple selections and effects.
+
+The effect itself does not need to implement separate logic for every possible selection.
+
+For example, a simple contrast-like operation can be constructed using luma selection:
+
+```cpp
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_SMALLER_THAN, 50);
+
+image.apply_effect.brightness(-20);
+
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_GREATER_THAN, 50);
+
+image.apply_effect.brightness(20);
+```
+
+This performs:
+
+```text
+Dark pixels  → darker
+Bright pixels → brighter
+```
+
+No dedicated contrast effect is required for this particular operation.
+
+---
+
+# Color Selection Example
+
+The same system can be used for basic color manipulation.
+
+For example:
+
+```cpp
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_SMALLER_THAN, 50);
+image.select(piml::CHANNEL_RED);
+
+image.apply_effect.brightness(-20);
+
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_GREATER_THAN, 50);
+
+image.apply_effect.brightness(20);
+```
+
+The first operation modifies the red channel of darker pixels.
+
+The second operation increases the brightness of brighter pixels.
+
+More complex color grading can be constructed by combining different luma ranges, channel selections, and effects.
+
+---
+
+# Image I/O
 
 Image input/output is provided by `pimlio.hh`.
 
-### Reading an image
+## Reading an Image
 
 ```cpp
 piml::Image image = piml::pimlio_read("image.png");
@@ -406,7 +634,9 @@ Image channels are stored internally as normalized `double` values.
 
 The source image's bit depth is preserved when it can be determined.
 
-### Writing an image
+---
+
+## Writing an Image
 
 ```cpp
 piml::pimlio_write(image, "output.png");
@@ -419,17 +649,27 @@ PIML currently supports output at:
 * 8 bits per channel
 * 16 bits per channel
 
-Values are clamped to `[0.0, 1.0]` before being converted to the output format.
+Values are clamped to:
 
-## Debugging
+```text
+[0.0, 1.0]
+```
+
+before being converted to the output format.
+
+---
+
+# Debugging
 
 PIML includes a small logging system for debugging and development.
 
-Debugging can be disabled or enabled on an image:
+Debugging can be disabled:
 
 ```cpp
 image.disable_debugging();
 ```
+
+and enabled again:
 
 ```cpp
 image.enable_debugging();
@@ -452,7 +692,7 @@ piml::Debugger debugger(image);
 debugger.show_everything();
 ```
 
-Individual log categories can also be accessed:
+Individual categories can also be accessed:
 
 ```cpp
 debugger.show_messages();
@@ -461,37 +701,185 @@ debugger.show_errors();
 debugger.show_activities();
 ```
 
-## Memory Usage
+Logs can be cleared individually or all at once using the corresponding `Debugger` functions.
 
-PIML uses more memory than a minimal image buffer because the selection system maintains explicit pointers to selected pixels.
+---
 
-This is a deliberate design trade-off.
+# Memory Usage
 
-The additional memory allows the library to provide fine-grained selection and gives the effect system a straightforward way to operate only on the selected pixels.
+PIML maintains explicit information about selected pixels.
 
-Selection filtering is performed using temporary pointer buffers rather than repeatedly removing elements from the middle of the selection vector. This allows selection refinement to remain efficient while avoiding unnecessary movement of vector elements.
+The image stores its actual pixels separately from the current selection:
 
-For applications where memory usage is critical, this is an important consideration when choosing how large an image to process.
+```text
+pixel_vector
+    │
+    └── actual Pixel objects
 
-## Performance
+selected_pixels
+    │
+    └── pointers to selected Pixel objects
+```
+
+The selection therefore does not duplicate the actual pixel data.
+
+Filtering the selection operates on `Pixel*` pointers.
+
+PIML also uses a temporary pointer buffer when refining selections.
+
+This design provides fine-grained selection while avoiding the cost of repeatedly moving elements when removing pixels from the middle of a vector.
+
+The additional selection memory is a deliberate trade-off for the flexibility provided by the selection system.
+
+For applications where memory usage is critical, this should be considered when choosing how large an image to process.
+
+---
+
+# Performance
 
 PIML is designed to keep image operations fast while retaining the selection-based architecture.
 
-Selection predicates currently perform linear scans over the current selection.
+Selection predicates currently scan the current selection linearly.
+
+Selection filtering uses a temporary pointer buffer rather than repeatedly erasing elements from the middle of the selection vector.
+
+Conceptually:
+
+```text
+Current Selection
+       │
+       ▼
+    Filter
+       │
+       ▼
+Temporary Pointer Buffer
+       │
+       ▼
+     swap()
+       │
+       ▼
+New Selection
+```
+
+This avoids repeated element shifting caused by middle-of-vector erases.
 
 Performance depends on factors such as:
 
 * Image dimensions
 * Number of selected pixels
 * Number of selection predicates
+* Number of effects
 * Number of operations performed
 * Image format
 * Available memory
 * Compiler optimizations
 
-The selection system trades some additional memory for flexibility and fine-grained control.
+PIML trades some additional memory for flexible and fine-grained selection.
 
-## Project Structure
+---
+
+# Design
+
+PIML is built around a selection-driven architecture.
+
+```text
+                         Image
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+        Pixel Data                   Selection
+                                         │
+                              ┌──────────┴──────────┐
+                              │                     │
+                            WHERE                 WHAT
+                              │                     │
+                       Which pixels?          Which channel?
+                              │                     │
+                              └──────────┬──────────┘
+                                         │
+                                         ▼
+                                   apply_effect
+                                         │
+                                         ▼
+                                        HOW
+                                         │
+                                  What operation?
+```
+
+The main responsibilities are separated:
+
+### Image
+
+`Image` owns the image data, current selection, image dimensions, bit depth, debugging state, and effect interface.
+
+### Selection
+
+Selection determines which pixels should be affected.
+
+Selection predicates can refine the current selection based on pixel properties such as luma.
+
+Channel selections determine which channel an effect should operate on.
+
+### Effect
+
+`Effect` performs the actual image operation.
+
+Effects operate on the current selection without needing to understand how that selection was created.
+
+This separation allows the same effect to work with:
+
+* All pixels
+* Dark pixels
+* Bright pixels
+* A luma range
+* A specific color channel
+* A specific channel within a filtered pixel selection
+
+without requiring separate implementations.
+
+---
+
+# The PIML Selection Model
+
+The selection architecture can be summarized as:
+
+```text
+WHERE
+  ↓
+Which pixels?
+
+WHAT
+  ↓
+Which channel?
+
+HOW
+  ↓
+Which effect?
+```
+
+For example:
+
+```cpp
+image.select(piml::EVERYTHING);
+image.select(piml::WHERE_LUMA_GREATER_THAN, 60);
+image.select(piml::CHANNEL_RED);
+
+image.apply_effect.brightness(15);
+```
+
+This reads conceptually as:
+
+```text
+WHERE luma > 60%
+WHAT  red channel
+HOW   brightness +15
+```
+
+The goal is to make image operations composable instead of creating a separate effect for every possible combination of conditions.
+
+---
+
+# Project Structure
 
 ```text
 piml/
@@ -521,7 +909,7 @@ piml/
     └── test.cc
 ```
 
-### Source files
+## Source Files
 
 | File                        | Description                      |
 | --------------------------- | -------------------------------- |
@@ -537,41 +925,9 @@ piml/
 | `test.sh`                   | Build and run tests              |
 | `clean.sh`                  | Clean generated files            |
 
-## Design
+---
 
-PIML is built around a selection-driven architecture:
-
-```text
-Image
-  │
-  ├── Pixel Data
-  │
-  ├── Selection
-  │      │
-  │      ├── WHERE → Which pixels?
-  │      │
-  │      └── WHAT  → Which channel?
-  │
-  └── Effect
-         │
-         └── HOW → What operation?
-```
-
-`Image` owns the image data and current selection.
-
-The selection system determines which pixels should be affected and, when requested, which channel of those pixels an effect should operate on.
-
-`Effect` performs the actual image operation.
-
-Keeping these responsibilities separate means that effects do not need to implement their own selection logic.
-
-A new selection predicate can therefore be introduced without requiring existing effects to be modified.
-
-Likewise, a new effect can operate on existing selection types without needing to understand how those selections were constructed.
-
-This separation is a core part of PIML's design.
-
-## Roadmap
+# Roadmap
 
 PIML is still under development.
 
@@ -580,6 +936,7 @@ Planned areas of development include:
 * Additional image effects
 * More selection types
 * More channel-based selection mechanisms
+* More pixel-property predicates
 * Complex selection rules
 * Conditional selections
 * Combining multiple selection conditions
@@ -587,11 +944,14 @@ Planned areas of development include:
 * Performance improvements
 * Memory usage improvements
 * Expanded test coverage
-* More advanced pixel-property predicates
+* More advanced color manipulation
+* More expressive selection operations
 
 The selection system is expected to become considerably more expressive as the library develops.
 
-## Contributing
+---
+
+# Contributing
 
 Contributions are welcome.
 
@@ -600,18 +960,24 @@ If you want to work on PIML, useful areas include:
 * Adding new effects
 * Improving image I/O
 * Implementing new selection mechanisms
+* Adding new pixel predicates
 * Optimizing existing operations
 * Adding tests
 * Improving documentation
+* Improving portability
 
 For larger changes, opening an issue first can help keep development coordinated.
 
-## License
+---
+
+# License
 
 PIML is released under **CC0 1.0 Universal**.
 
-See the license text included in the project for the complete terms.
+See the license text included with the project for the complete terms.
 
-## Repository
+---
+
+# Repository
 
 [GitHub Repository](https://github.com/darkyboys/piml)
