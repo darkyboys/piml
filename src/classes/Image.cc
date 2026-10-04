@@ -126,25 +126,12 @@ express Statement of Purpose.
 #include "../../piml.hh"
 
 namespace piml {
-    Image::Image(
-        const Image& img
-    ){
-        // We will only copy what's necessary, Not the logs or selected pixels of the other image.
-        for (const Pixel& px : img.pixel_vector){
-            pixel_vector.push_back(px);
-        }
-        bitdepth = img.bitdepth;
-        if (debugging_allowed){ // Debugging
-            log(
-                "Image::Image",
-                "Copied the Image.",
-                Log::ACTIVITY
-            );
-        } // Debugging
-    }
-
     void Image::select(
-        Selection selection
+        Selection selection,
+        double a,
+        double b,
+        double c,
+        double e
     ){
         switch (selection){
             case EVERYTHING:
@@ -157,7 +144,172 @@ namespace piml {
                     Log::ACTIVITY
                 ); // Debugging
                 break;
+            
+            case CHANNEL_RED:
+                for (Pixel* px : selected_pixels){
+                    px->s = &px->r;
+                }
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the red channel.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
 
+            case CHANNEL_GREEN:
+                for (Pixel* px : selected_pixels){
+                    px->s = &px->g;
+                }
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the green channel.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case CHANNEL_BLUE:
+                for (Pixel* px : selected_pixels){
+                    px->s = &px->b;
+                }
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the blue channel.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case CHANNEL_ALPHA:
+                for (Pixel* px : selected_pixels){
+                    px->s = &px->a;
+                }
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the alpha channel.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_LUMA_GREATER_THAN:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() > normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the luma is greater than " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_LUMA_SMALLER_THAN:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() < normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the luma is smaller than " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_LUMA_GREATER_THAN_OR_EQUALS:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() >= normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the luma is greater than or equals to " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_LUMA_SMALLER_THAN_OR_EQUALS:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() <= normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the luma is smaller than or equals to " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_LUMA_EQUALS:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() == normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the luma is equals to " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_LUMA_BETWEEN:
+                if (b < a){
+                    if (debugging_allowed) log( // Debugging
+                        "Image::select",
+                        "Invalid range detected from " + std::to_string(100.0 * a) + "%, to " + std::to_string(100.0 * b) + "%. it should have been: " + std::to_string(100.0 * b) + "%, to " + std::to_string(100.0 * a) + "%.",
+                        Log::ERROR
+                    ); // Debugging
+                    break;
+                }
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() >= normalize_percentage(a) and px->average() <= normalize_percentage(b)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the luma is in between " + std::to_string(100.0 * a) + "%. and " + std::to_string(100.0 * b) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
                 
             default:
                 if (debugging_allowed) log( // Debugging
@@ -174,6 +326,18 @@ namespace piml {
     void Image::enable_debugging(){
         if (not debugging_allowed) debugging_allowed = true;
     }
+
+    void Image::clean_selection() // To clear any junk
+    {
+        for (Pixel* px : selected_pixels)
+            px->s = nullptr;
+    }
+
+    void Image::clear_selection() // To clear any junk
+    {
+        selected_pixels.clear();
+    }
+
 
     void Image::log(
         const std::string& name,

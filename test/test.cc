@@ -2,15 +2,17 @@
 #include "../pimlio.hh"
 
 int main(){
+    using namespace piml;
+    auto img = pimlio_read("img/test.png");
 
-    piml::Image image = piml::pimlio_read("img/test.png");
+    img.select(EVERYTHING);
+    img.select(WHERE_LUMA_SMALLER_THAN, 50);
+    img.select(CHANNEL_RED);
+    img.apply_effect.brightness(-20);
 
-    image.select(piml::EVERYTHING);
-    
-    piml::Effect effect = image;
-    effect.brightness(10);
-    effect.brightness(-90);
+    img.select(EVERYTHING);
+    img.select(WHERE_LUMA_GREATER_THAN, 50);
+    img.apply_effect.brightness(20);
 
-    piml::pimlio_write(image, "test_output.png");
-    
+    pimlio_write(img, "test_output.png");
 }

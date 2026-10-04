@@ -137,34 +137,107 @@ namespace piml {
                g,
                b,
                a;
+        double* s = nullptr; // selected channel, This will be used if not nullptr
 
         inline void add(
             double value
         ){
-            r += value;
-            g += value;
-            b += value;
+            if (s != nullptr){
+                *s += value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                r += value;
+                g += value;
+                b += value;
 
-            r = std::clamp(r, 0.0, 1.0);
-            g = std::clamp(g, 0.0, 1.0);
-            b = std::clamp(b, 0.0, 1.0);
+                r = std::clamp(r, 0.0, 1.0);
+                g = std::clamp(g, 0.0, 1.0);
+                b = std::clamp(b, 0.0, 1.0);
+            }
         }
 
         inline void subtract(
             double value
         ){
-            r -= value;
-            g -= value;
-            b -= value;
+            if (s != nullptr){
+                *s -= value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                r -= value;
+                g -= value;
+                b -= value;
 
-            r = std::clamp(r, 0.0, 1.0);
-            g = std::clamp(g, 0.0, 1.0);
-            b = std::clamp(b, 0.0, 1.0);
+                r = std::clamp(r, 0.0, 1.0);
+                g = std::clamp(g, 0.0, 1.0);
+                b = std::clamp(b, 0.0, 1.0);
+            }
+        }
+
+        inline double average(){
+            return std::clamp((r + b + b) / 3.0, 0.0, 1.0);
+        }
+
+        Pixel() = default; // Useless default constructor
+
+        Pixel(const Pixel& other): // Copy constructor
+            r(other.r),
+            g(other.g),
+            b(other.b),
+            a(other.a),
+            s(nullptr)
+        {}
+
+        Pixel(Pixel&& other): // Move-ish copy constructor
+            r(other.r),
+            g(other.g),
+            b(other.b),
+            a(other.a),
+            s(nullptr)
+        {}
+
+        Pixel& operator=(const Pixel& other) // Copy assignment
+        {
+            if (this == &other)
+                return *this;
+        
+            r = other.r;
+            g = other.g;
+            b = other.b;
+            a = other.a;
+        
+            // Don't touch s.
+            return *this;
+        }
+
+        Pixel& operator=(Pixel&& other) // Move-ish copy assignment
+        {
+            if (this == &other)
+                return *this;
+        
+            r = other.r;
+            g = other.g;
+            b = other.b;
+            a = other.a;
+        
+            // Don't touch s.
+            return *this;
         }
     };
 
     enum Selection{
-        EVERYTHING
+        EVERYTHING,
+        CHANNEL_RED,
+        CHANNEL_BLUE,
+        CHANNEL_GREEN,
+        CHANNEL_ALPHA,
+        WHERE_LUMA_GREATER_THAN,
+        WHERE_LUMA_GREATER_THAN_OR_EQUALS,
+        WHERE_LUMA_SMALLER_THAN_OR_EQUALS,
+        WHERE_LUMA_SMALLER_THAN,
+        WHERE_LUMA_BETWEEN,
+        WHERE_LUMA_EQUALS,
     };
 
     struct Log{
@@ -186,12 +259,29 @@ namespace piml {
     ){
         return std::clamp(value, -100.0, 100.0) / 100.0;
     }
+
+    class Image;
+    class Effect{
+
+        Image& image;
+
+        public:
+            Effect(
+                Image& img
+            ) : image(img){}
+
+            void brightness( // Applies the brightness to the image.
+                double value
+            );
+
+    };
     
 
     class Image{
         // Private section of the class! - This is not directly accessible by the programmer
         std::vector <Pixel> pixel_vector; // This will only store the pixels.
         std::vector <Pixel*> selected_pixels; // This will only store the pixels.
+        std::vector <Pixel*> pixel_buffer; // This will only store the pixels.
         std::vector <Log> logs; // Debug logs when needed.
 
         unsigned char bitdepth = 0; // This must not be zero!
@@ -206,23 +296,44 @@ namespace piml {
         friend void pimlio_write(const Image& image, const std::string& filename);
 
         public:
+            Effect apply_effect;
             Image(
-                const std::vector <Pixel> input_pixels,
+                const std::vector <Pixel>& input_pixels,
                 unsigned char depth,
                 int w,
                 int h
-            ) : pixel_vector(input_pixels), bitdepth(depth) , height(h), width(w) {}
+            ) : pixel_vector(input_pixels), bitdepth(depth) , height(h), width(w), apply_effect(*this) {}
 
             Image(
                 const Image& img
-            );
+            ) : apply_effect(*this){
+                // We will only copy what's necessary, Not the logs or selected pixels of the other image.
+                for (const Pixel& px : img.pixel_vector){
+                    pixel_vector.push_back(px);
+                }
+                bitdepth = img.bitdepth;
+                if (debugging_allowed){ // Debugging
+                    log(
+                        "Image::Image",
+                        "Copied the Image.",
+                        Log::ACTIVITY
+                    );
+                } // Debugging
+            }
 
             void select(
-                Selection selection
+                Selection selection,
+                double a = 0.0,
+                double b = 0.0,
+                double c = 0.0,
+                double e = 0.0
             );
 
             void disable_debugging();
             void enable_debugging();
+            
+            void clear_selection(); // Actually empty the selection
+            void clean_selection(); // To clean any junk
 
             void log(
                 const std::string& name,
@@ -231,21 +342,6 @@ namespace piml {
             );
 
             ~Image();
-    };
-
-    class Effect{
-
-        Image& image;
-
-        public:
-            Effect(
-                Image& img
-            ) : image(img){}
-
-            void brightness( // Applies the brightness to the image.
-                double value
-            );
-
     };
 
 
