@@ -9,15 +9,17 @@ std::atomic <int> active_threads = 0;
 std::atomic <int> total_thread_count = std::thread::hardware_concurrency();
 
 void scan_and_build_object(const std::string& name, const std::string& compiler);
-int main(){
+int main(int argc, char* argv[]){
 
     std::cout << "Building the sub-libraries.\n";
     
-    std::string compiler = "g++";
+    std::string compiler = "clang++";
     std::system("rm -rf objects && mkdir objects");
 
     scan_and_build_object("src", compiler);
-    scan_and_build_object("test", compiler);
+    if (std::string(argv[1]) == "test")
+        scan_and_build_object("test", compiler);
+    else scan_and_build_object("benchmark", compiler);
 }
 
 

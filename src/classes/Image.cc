@@ -135,6 +135,7 @@ namespace piml {
     ){
         switch (selection){
             case EVERYTHING:
+                selected_pixels.clear();
                 for (Pixel& px : pixel_vector){
                     selected_pixels.push_back(&px);
                 }

@@ -1,4 +1,4 @@
 g++ build.cc -o build
-./build test
+./build bench
 g++ objects/* -o exec_test
 ./exec_test
