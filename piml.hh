@@ -157,6 +157,58 @@ namespace piml {
             }
         }
 
+        inline void add_r(
+            double value
+        ){
+            if (s != nullptr){
+                *s += value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                r += value;
+                r = std::clamp(r, 0.0, 1.0);
+            }
+        }
+
+        inline void add_g(
+            double value
+        ){
+            if (s != nullptr){
+                *s += value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                g += value;
+                g = std::clamp(g, 0.0, 1.0);
+            }
+        }
+
+        inline void add_b(
+            double value
+        ){
+            if (s != nullptr){
+                *s += value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                b += value;
+                b = std::clamp(b, 0.0, 1.0);
+            }
+        }
+
+        inline void add_a(
+            double value
+        ){
+            if (s != nullptr){
+                *s += value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                a += value;
+                a = std::clamp(a, 0.0, 1.0);
+            }
+        }
+
         inline void subtract(
             double value
         ){
@@ -175,8 +227,80 @@ namespace piml {
             }
         }
 
+        inline void subtract_r(
+            double value
+        ){
+            if (s != nullptr){
+                *s -= value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                r -= value;
+                r = std::clamp(r, 0.0, 1.0);
+            }
+        }
+
+        inline void subtract_g(
+            double value
+        ){
+            if (s != nullptr){
+                *s -= value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                g -= value;
+                g = std::clamp(g, 0.0, 1.0);
+            }
+        }
+
+        inline void subtract_b(
+            double value
+        ){
+            if (s != nullptr){
+                *s -= value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                b -= value;
+                b = std::clamp(b, 0.0, 1.0);
+            }
+        }
+
+        inline void subtract_a(
+            double value
+        ){
+            if (s != nullptr){
+                *s -= value;
+                *s = std::clamp(*s, 0.0, 1.0);
+            }
+            else {
+                a -= value;
+                a = std::clamp(a, 0.0, 1.0);
+            }
+        }
+
         inline double average(){
             return std::clamp((r + b + b) / 3.0, 0.0, 1.0);
+        }
+
+        inline double get_r(){
+            if (s != nullptr) return *s;
+            else return r;
+        }
+
+        inline double get_g(){
+            if (s != nullptr) return *s;
+            else return g;
+        }
+
+        inline double get_b(){
+            if (s != nullptr) return *s;
+            else return b;
+        }
+
+        inline double get_a(){
+            if (s != nullptr) return *s;
+            else return a;
         }
 
         Pixel() = default; // Useless default constructor
