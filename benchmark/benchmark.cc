@@ -506,4 +506,52 @@ int main()
         },
         1000
     );
+
+    benchmark(
+        "select - everything",
+        [&]() {
+            image.select(piml::EVERYTHING);
+        },
+        1000
+    );
+
+    benchmark(
+        "linear contrast",
+        [&]() {
+            image.apply_effect.linear_contrast(10);
+        },
+        1000
+    );
+
+    benchmark(
+        "linear gain",
+        [&]() {
+            image.apply_effect.linear_gain(10);
+        },
+        1000
+    );
+
+    benchmark(
+        "linear lift",
+        [&]() {
+            image.apply_effect.linear_lift(10);
+        },
+        1000
+    );
+
+    benchmark(
+        "smoothing brightness",
+        [&]() {
+            image.apply_effect.smoothing_brightness(10);
+        },
+        1000
+    );
+
+    benchmark(
+        "smoothing brightness opposite",
+        [&]() {
+            image.apply_effect.smoothing_brightness_opposite(10);
+        },
+        1000
+    );
 }

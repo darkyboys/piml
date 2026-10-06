@@ -562,6 +562,484 @@ This affects only the red channel.
 
 ---
 
+# Brightness Effects
+
+PIML provides several effects that operate on the **brightness of selected pixels**.
+
+These effects use the average of the pixel's RGB channels as its brightness value:
+
+```text
+brightness = (r + g + b) / 3.0
+```
+
+The alpha channel does not participate in these calculations.
+
+All of the following effects operate on the image's **current selection**. They can therefore be combined with the selection system described earlier:
+
+```text
+WHERE → Which pixels?
+WHAT  → Which channel?
+HOW   → Which brightness operation?
+```
+
+The available brightness-related effects are:
+
+```cpp
+image.apply_effect.linear_contrast(value, point);
+
+image.apply_effect.linear_gain(value, point);
+
+image.apply_effect.linear_lift(value, point);
+
+image.apply_effect.smoothing_brightness(value);
+
+image.apply_effect.smoothing_brightness_opposite(value);
+```
+
+These effects are designed to modify pixel brightness according to the pixel's position relative to a specified brightness point or according to its existing brightness.
+
+---
+
+## Linear Contrast
+
+```cpp
+image.apply_effect.linear_contrast(value, point);
+```
+
+`linear_contrast()` applies a brightness adjustment relative to a specified brightness point.
+
+The `point` argument represents the reference brightness around which the operation is performed.
+
+The calculation is based on the normalized distance between the pixel brightness and the specified point:
+
+```text
+calculation = (brightness - point) / point
+```
+
+The resulting value describes how far the pixel is from the reference point.
+
+Conceptually:
+
+```text
+             point
+               │
+               ▼
+0.0 ───────────┼─────────── 1.0
+      darker   │   brighter
+```
+
+Pixels below the point produce a negative calculation, while pixels above the point produce a positive calculation.
+
+The calculated value is then scaled according to `value`.
+
+### Example
+
+```cpp
+image.select(piml::EVERYTHING);
+
+image.apply_effect.linear_contrast(20, 0.5);
+```
+
+This applies a linear contrast adjustment around a brightness point of `50%`.
+
+The `value` argument controls the amount of the adjustment.
+
+Because PIML internally uses normalized floating-point pixel values, the effect operates on the normalized brightness representation rather than directly on 8-bit or 16-bit integer values.
+
+---
+
+## Linear Gain
+
+```cpp
+image.apply_effect.linear_gain(value, point);
+```
+
+`linear_gain()` increases the brightness of pixels that are above the specified brightness point.
+
+The effect calculates the normalized distance from the point:
+
+```text
+calculation = (brightness - point) / point
+```
+
+Only positive results are used:
+
+```text
+calculation > 0.0
+```
+
+This means pixels below the specified point receive no additional brightness from the gain calculation, while pixels above the point receive an adjustment.
+
+Conceptually:
+
+```text
+0.0 ───────────┼─────────── 1.0
+               │
+             point
+
+       no gain │ positive gain
+```
+
+### Example
+
+```cpp
+image.select(piml::EVERYTHING);
+
+image.apply_effect.linear_gain(20, 0.5);
+```
+
+This applies a gain of `20%` to the brighter pixels relative to a `50%` brightness point.
+
+`linear_gain()` is therefore useful when the goal is to emphasize brighter areas without applying the same adjustment to darker areas.
+
+---
+
+## Linear Lift
+
+```cpp
+image.apply_effect.linear_lift(value, point);
+```
+
+`linear_lift()` performs the complementary operation to `linear_gain()`.
+
+Instead of applying the adjustment to pixels above the reference point, it applies the adjustment to pixels below the point.
+
+The normalized distance is calculated as:
+
+```text
+calculation = (brightness - point) / point
+```
+
+Only negative values are used. The negative value is converted into a positive magnitude before applying the adjustment.
+
+Conceptually:
+
+```text
+0.0 ───────────┼─────────── 1.0
+               │
+             point
+
+ positive lift │ no lift
+```
+
+### Example
+
+```cpp
+image.select(piml::EVERYTHING);
+
+image.apply_effect.linear_lift(20, 0.5);
+```
+
+This applies a `20%` lift to pixels below the `50%` brightness point.
+
+This makes `linear_lift()` useful for selectively increasing the brightness of darker pixels.
+
+---
+
+## Smoothing Brightness
+
+```cpp
+image.apply_effect.smoothing_brightness(value);
+```
+
+`smoothing_brightness()` applies an adjustment based on the existing brightness of each pixel.
+
+The amount of adjustment is calculated using:
+
+```text
+(1.0 - brightness) * change
+```
+
+where:
+
+```text
+change = normalize_percentage(value)
+```
+
+This causes darker pixels to receive a larger adjustment and brighter pixels to receive a smaller adjustment.
+
+For example:
+
+```text
+brightness = 0.0
+
+(1.0 - 0.0) = 1.0
+```
+
+The full change is applied.
+
+At the other extreme:
+
+```text
+brightness = 1.0
+
+(1.0 - 1.0) = 0.0
+```
+
+No change is applied.
+
+Conceptually:
+
+```text
+Dark pixels                         Bright pixels
+
+more adjustment  ────────────────►  less adjustment
+
+0.0 brightness                     1.0 brightness
+```
+
+### Example
+
+```cpp
+image.select(piml::EVERYTHING);
+
+image.apply_effect.smoothing_brightness(20);
+```
+
+This applies a `20%` brightness adjustment with stronger changes on darker pixels and progressively smaller changes as pixel brightness increases.
+
+This creates a smoothing-style brightness adjustment rather than applying the same brightness change uniformly to every pixel.
+
+---
+
+## Smoothing Brightness Opposite
+
+```cpp
+image.apply_effect.smoothing_brightness_opposite(value);
+```
+
+`smoothing_brightness_opposite()` applies the opposite brightness weighting.
+
+The adjustment is based directly on the pixel's brightness:
+
+```text
+brightness * change
+```
+
+where:
+
+```text
+change = normalize_percentage(value)
+```
+
+This means brighter pixels receive a larger adjustment while darker pixels receive a smaller adjustment.
+
+For example:
+
+```text
+brightness = 0.0
+
+0.0 * change = 0.0
+```
+
+while:
+
+```text
+brightness = 1.0
+
+1.0 * change = change
+```
+
+Conceptually:
+
+```text
+Dark pixels                         Bright pixels
+
+less adjustment  ────────────────►  more adjustment
+
+0.0 brightness                     1.0 brightness
+```
+
+### Example
+
+```cpp
+image.select(piml::EVERYTHING);
+
+image.apply_effect.smoothing_brightness_opposite(20);
+```
+
+This applies a `20%` brightness adjustment with a stronger effect on brighter pixels.
+
+---
+
+## Comparing the Brightness Effects
+
+The brightness effects can be understood by looking at how they distribute the adjustment across the brightness range.
+
+| Effect                            | Primary behavior                                           |
+| --------------------------------- | ---------------------------------------------------------- |
+| `linear_contrast()`               | Adjusts brightness relative to a reference point           |
+| `linear_gain()`                   | Applies the adjustment to pixels above the reference point |
+| `linear_lift()`                   | Applies the adjustment to pixels below the reference point |
+| `smoothing_brightness()`          | Applies more adjustment to darker pixels                   |
+| `smoothing_brightness_opposite()` | Applies more adjustment to brighter pixels                 |
+
+The smoothing effects can be visualized as:
+
+```text
+smoothing_brightness
+
+Adjustment
+    ▲
+    │\
+    │ \
+    │  \
+    │   \
+    │    \
+    │     \
+    └──────────────► Brightness
+    dark          bright
+```
+
+and:
+
+```text
+smoothing_brightness_opposite
+
+Adjustment
+    ▲
+    │     /
+    │    /
+    │   /
+    │  /
+    │ /
+    │/
+    └──────────────► Brightness
+    dark          bright
+```
+
+The linear gain and lift operations instead use a configurable reference point:
+
+```text
+                 point
+                   │
+                   ▼
+0.0 ───────────────┼─────────────── 1.0
+       lift        │       gain
+```
+
+This makes the `point` parameter useful for deciding which part of the brightness range should receive the adjustment.
+
+---
+
+## Combining Brightness Effects With Selection
+
+Because all brightness effects operate on the current selection, they can be combined with PIML's selection predicates.
+
+For example, darker pixels can first be selected:
+
+```cpp
+image.select(piml::EVERYTHING);
+
+image.select(
+    piml::WHERE_LUMA_SMALLER_THAN,
+    40
+);
+
+image.apply_effect.linear_lift(20, 0.5);
+```
+
+This means:
+
+```text
+WHERE → luma < 40%
+
+HOW   → linear lift +20
+```
+
+Only pixels with a luma below `40%` are processed.
+
+A channel can also be selected:
+
+```cpp
+image.select(piml::EVERYTHING);
+
+image.select(
+    piml::WHERE_LUMA_SMALLER_THAN,
+    40
+);
+
+image.select(piml::CHANNEL_BLUE);
+
+image.apply_effect.smoothing_brightness(20);
+```
+
+This means:
+
+```text
+WHERE → luma < 40%
+
+WHAT  → blue channel
+
+HOW   → smoothing brightness +20
+```
+
+The effect therefore does not need to know whether the pixels were selected using a luma predicate, a future color predicate, or another selection mechanism.
+
+---
+
+## Brightness Effects and the Selection Model
+
+These effects follow the same design principle used throughout PIML:
+
+```text
+WHERE
+  ↓
+Which pixels?
+
+WHAT
+  ↓
+Which channel?
+
+HOW
+  ↓
+Which brightness operation?
+```
+
+For example:
+
+```cpp
+image.select(piml::EVERYTHING);
+
+image.select(
+    piml::WHERE_LUMA_GREATER_THAN,
+    60
+);
+
+image.select(piml::CHANNEL_RED);
+
+image.apply_effect.linear_gain(15, 0.5);
+```
+
+Conceptually:
+
+```text
+WHERE → luma > 60%
+
+WHAT  → red channel
+
+HOW   → linear gain +15
+```
+
+The selection system determines **where** the operation occurs, while the brightness effect determines **how the selected pixels are modified**.
+
+This separation allows the same brightness effect to be reused with different pixel selections and channel selections.
+
+### Fairly Simple Teal & Orange Effect using the brightness effect.
+```cpp
+    img.select(EVERYTHING);
+    img.apply_effect.brightness(5);
+    img.select(piml::CHANNEL_RED);
+    img.apply_effect.linear_contrast(10);
+    img.select(EVERYTHING);
+    img.select(piml::CHANNEL_BLUE);
+    img.apply_effect.linear_gain(-10);
+```
+
+This creates the hollyood's Teal & Orange effects without any curve or anything. Just a linear teal & orange. For more refinements consider using smoothing_brightness in the end.
+
+---
+
 # Selection-Driven Processing
 
 One of the main goals of PIML is to allow complex image operations to be constructed by combining simple selections and effects.
