@@ -270,7 +270,7 @@ void benchmark(
     std::cout << term::bold
               << term::cyan
               << "╔══════════════════════════════════════════════╗\n"
-              << "║           SIML PERFORMANCE BENCHMARK         ║\n"
+              << "║           PIML PERFORMANCE BENCHMARK         ║\n"
               << "╚══════════════════════════════════════════════╝\n"
               << term::reset;
 
@@ -516,9 +516,41 @@ int main()
     );
 
     benchmark(
+        "select - where intensity is greater than or equals to 50",
+        [&]() {
+            image.select(piml::WHERE_INTENSITY_GREATER_THAN_OR_EQUALS, 50);
+        },
+        1000
+    );
+
+    benchmark(
+        "select - clear",
+        [&]() {
+            image.clear_selection();
+        },
+        1000
+    );
+
+    benchmark(
+        "select - everything",
+        [&]() {
+            image.select(piml::EVERYTHING);
+        },
+        1000
+    );
+
+    benchmark(
         "linear contrast",
         [&]() {
             image.apply_effect.linear_contrast(10);
+        },
+        1000
+    );
+
+    benchmark(
+        "linear corners",
+        [&]() {
+            image.apply_effect.linear_corners(10);
         },
         1000
     );

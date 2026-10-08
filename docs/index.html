@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CppLib Documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>&lt;/&gt;</span>
+        PIML - Precision Image Manipulation Library
+    </div>
+
+    <nav>
+        <a href="#documentation">Documentation</a>
+    </nav>
+
+</header>
+
+
+<main>
+
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <div class="badge">
+                PIML Library Documentation
+            </div>
+
+            <h1>
+                Build faster with
+                <span>C++</span>.
+            </h1>
+
+            <p>
+                Explore classes, functions, utilities,
+                namespaces and examples from PIML.
+            </p>
+
+            <div class="search-container">
+
+                <span class="search-icon">⌕</span>
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search documentation..."
+                    autocomplete="off"
+                >
+
+                <kbd>CTRL</kbd>
+                <kbd>K</kbd>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section
+        id="documentation"
+        class="documentation"
+    >
+
+        <div class="section-heading">
+
+            <div>
+                <span class="eyebrow">
+                    REFERENCE
+                </span>
+            
+                <h2>
+                    Documentation
+                </h2>
+            </div>
+        
+            <div class="documentation-actions">
+            
+                <span
+                    id="topicCount"
+                    class="topic-count"
+                >
+                    0 topics
+                </span>
+            
+                <button
+                    id="extend_all"
+                    class="extend-all"
+                    type="button"
+                >
+                    Expand All
+                </button>
+            
+            </div>
+        
+        </div>
+
+
+        <!--
+            JavaScript automatically inserts
+            documentation here.
+        -->
+
+        <div
+            id="topicsContainer"
+            class="topics-container"
+        ></div>
+
+
+        <div
+            id="noResults"
+            class="no-results hidden"
+        >
+
+            <div class="no-results-icon">
+                ⌕
+            </div>
+
+            <h3>
+                No documentation found
+            </h3>
+
+            <p>
+                Try another class, function,
+                namespace, or concept.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    <div>
+        <strong>CppLib</strong>
+        <span>Developer Documentation</span>
+    </div>
+
+    <span>
+        C++ Library Reference
+    </span>
+
+</footer>
+
+
+<script src="script.js"></script>
+<script src="docs.js"></script>
+<script>
+    // Docs.add({
+    //     title: "Introduction to PIML",
+    //     category: "General",
+    //     description: "An open source and Public Domain Image manipulation library made for C++.",
+    //     tags: ["introduction", "cpp"],
+    //     example: `
+    //         #include "piml.hh"
+    //         #include "pimlio.hh"
+
+    //         int main()
+    //         {
+    //             using namespace piml;
+    //             auto img = pimlio_read("img/test.png");
+    //             pimlio_write(img, "output.png");
+    //         }
+    //     `
+    // });
+    renderTopics();
+</script>
+</body>
+</html>

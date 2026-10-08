@@ -19,7 +19,9 @@ int main(int argc, char* argv[]){
     scan_and_build_object("src", compiler);
     if (std::string(argv[1]) == "test")
         scan_and_build_object("test", compiler);
-    else scan_and_build_object("benchmark", compiler);
+    else {
+        scan_and_build_object("benchmark", compiler);
+    }
 }
 
 

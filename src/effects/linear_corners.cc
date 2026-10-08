@@ -129,12 +129,21 @@ express Statement of Purpose.
 
 namespace piml {
 
-    void Effect::linear_contrast( // Applies the brightness to the image.
+    void Effect::linear_corners( // Applies the brightness to the image.
         double value,
         double point
     ){
-        double change = ((normalize_percentage(value) * 1.0) / 2.0) * 100; // Because 1.0 is the max
-        linear_corners(change, point);
+        double change = normalize_percentage(value) * 1.0; // Because 1.0 is the max
+        for (std::size_t i = 0;i < image.selected_pixels.size();i++){
+            double calculation = (// Formulae is ((p-(l/2))/(l/2)) * change. Why because this formula gives us the distance between a point `p` and the midpoint of the line `l` in normalized percentage, Ranging from -1.0 to +1.0, Negative values means that the point is in the left side of the midpoint and positive values represents that the point is on the right side of the midpoint. 
+                ((image.selected_pixels[i]->average()) - (point)) // because 1.0 /2 is 0.5
+                                        /
+                                       point // Again l is 1.0 and 1.0 / 2 is always 0.5
+            );
+            image.selected_pixels[i]->add( 
+                calculation * change // Since the dark pixel lies on the left side of the line we only return the calculation if the value was negative and to respect the given argument `value` we convert the value into positive. So all the brighter points will be turned into 0.0 where as the dark points will remain.
+            );
+        }
     }
 
 }

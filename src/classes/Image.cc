@@ -190,12 +190,134 @@ namespace piml {
                 ); // Debugging
                 break;
 
-            case WHERE_LUMA_GREATER_THAN:
+            case WHERE_INTENSITY_GREATER_THAN:
                 pixel_buffer.clear();
                 pixel_buffer.reserve(selected_pixels.size());
 
                 for (Pixel* px : selected_pixels) {
                     if (px->average() > normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the intensity is greater than " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_INTENSITY_SMALLER_THAN:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() < normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the intensity is smaller than " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_INTENSITY_GREATER_THAN_OR_EQUALS:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() >= normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the intensity is greater than or equals to " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_INTENSITY_SMALLER_THAN_OR_EQUALS:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() <= normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the intensity is smaller than or equals to " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_INTENSITY_EQUALS:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() == normalize_percentage(a)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the intensity is equals to " + std::to_string(100.0 * a) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_INTENSITY_BETWEEN:
+                if (b < a){
+                    if (debugging_allowed) log( // Debugging
+                        "Image::select",
+                        "Invalid range detected from " + std::to_string(100.0 * a) + "%, to " + std::to_string(100.0 * b) + "%. it should have been: " + std::to_string(100.0 * b) + "%, to " + std::to_string(100.0 * a) + "%.",
+                        Log::ERROR
+                    ); // Debugging
+                    break;
+                }
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+                            
+                for (Pixel* px : selected_pixels) {
+                    if (px->average() >= normalize_percentage(a) and px->average() <= normalize_percentage(b)) {
+                        pixel_buffer.push_back(px);
+                    }
+                }
+                
+                selected_pixels.swap(pixel_buffer);
+                pixel_buffer.clear();
+                if (debugging_allowed) log( // Debugging
+                    "Image::select",
+                    "Selected the pixels where the luma is in between " + std::to_string(100.0 * a) + "%. and " + std::to_string(100.0 * b) + "%.",
+                    Log::ACTIVITY
+                ); // Debugging
+                break;
+
+            case WHERE_LUMA_GREATER_THAN:
+                pixel_buffer.clear();
+                pixel_buffer.reserve(selected_pixels.size());
+
+                for (Pixel* px : selected_pixels) {
+                    if (px->luma() > normalize_percentage(a)) {
                         pixel_buffer.push_back(px);
                     }
                 }
@@ -214,7 +336,7 @@ namespace piml {
                 pixel_buffer.reserve(selected_pixels.size());
                             
                 for (Pixel* px : selected_pixels) {
-                    if (px->average() < normalize_percentage(a)) {
+                    if (px->luma() < normalize_percentage(a)) {
                         pixel_buffer.push_back(px);
                     }
                 }
@@ -233,7 +355,7 @@ namespace piml {
                 pixel_buffer.reserve(selected_pixels.size());
                             
                 for (Pixel* px : selected_pixels) {
-                    if (px->average() >= normalize_percentage(a)) {
+                    if (px->luma() >= normalize_percentage(a)) {
                         pixel_buffer.push_back(px);
                     }
                 }
@@ -252,7 +374,7 @@ namespace piml {
                 pixel_buffer.reserve(selected_pixels.size());
                             
                 for (Pixel* px : selected_pixels) {
-                    if (px->average() <= normalize_percentage(a)) {
+                    if (px->luma() <= normalize_percentage(a)) {
                         pixel_buffer.push_back(px);
                     }
                 }
@@ -271,7 +393,7 @@ namespace piml {
                 pixel_buffer.reserve(selected_pixels.size());
                             
                 for (Pixel* px : selected_pixels) {
-                    if (px->average() == normalize_percentage(a)) {
+                    if (px->luma() == normalize_percentage(a)) {
                         pixel_buffer.push_back(px);
                     }
                 }
@@ -298,7 +420,7 @@ namespace piml {
                 pixel_buffer.reserve(selected_pixels.size());
                             
                 for (Pixel* px : selected_pixels) {
-                    if (px->average() >= normalize_percentage(a) and px->average() <= normalize_percentage(b)) {
+                    if (px->luma() >= normalize_percentage(a) and px->luma() <= normalize_percentage(b)) {
                         pixel_buffer.push_back(px);
                     }
                 }

@@ -1,1 +1,1 @@
-rm -rf test_output.png objects exec_test build
+rm -rf test_output.png objects exec_test build piml_cpubench bench

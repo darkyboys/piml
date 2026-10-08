@@ -125,7 +125,7 @@ express Statement of Purpose.
 
 #include <algorithm>
 #ifndef PIML
-#define PIML 1.0
+#define PIML 1.001
 
 #include <vector>
 #include <string>
@@ -303,6 +303,16 @@ namespace piml {
             else return a;
         }
 
+        inline double luma(){
+            constexpr double RED_LUMA = 0.2126;
+            constexpr double GREEN_LUMA = 0.7152;
+            constexpr double BLUE_LUMA = 0.0722;
+            if (s != nullptr){
+                return *s*RED_LUMA + *s*GREEN_LUMA + *s*BLUE_LUMA;
+            }
+            return (r*RED_LUMA + g*GREEN_LUMA + b*BLUE_LUMA);
+        }
+
         Pixel() = default; // Useless default constructor
 
         Pixel(const Pixel& other): // Copy constructor
@@ -356,12 +366,18 @@ namespace piml {
         CHANNEL_BLUE,
         CHANNEL_GREEN,
         CHANNEL_ALPHA,
+        WHERE_INTENSITY_GREATER_THAN,
+        WHERE_INTENSITY_GREATER_THAN_OR_EQUALS,
+        WHERE_INTENSITY_SMALLER_THAN_OR_EQUALS,
+        WHERE_INTENSITY_SMALLER_THAN,
+        WHERE_INTENSITY_BETWEEN,
+        WHERE_INTENSITY_EQUALS,
         WHERE_LUMA_GREATER_THAN,
         WHERE_LUMA_GREATER_THAN_OR_EQUALS,
         WHERE_LUMA_SMALLER_THAN_OR_EQUALS,
         WHERE_LUMA_SMALLER_THAN,
         WHERE_LUMA_BETWEEN,
-        WHERE_LUMA_EQUALS,
+        WHERE_LUMA_EQUALS
     };
 
     struct Log{
@@ -412,6 +428,11 @@ namespace piml {
             );
             
             void linear_gain( // Lifts up the bright pixels linearly.
+                double value,
+                double point = 0.5
+            );
+
+            void linear_corners( // Manipulates the corner point 0 and the corner point 1 on the linear intensity graph. 
                 double value,
                 double point = 0.5
             );
