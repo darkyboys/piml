@@ -129,7 +129,7 @@ express Statement of Purpose.
 
 namespace piml {
 
-    void Effect::linear_lift( // Applies the brightness to the image.
+    void Effect::intensity_lift( // Applies the brightness to the image.
         double value,
         double point
     ){

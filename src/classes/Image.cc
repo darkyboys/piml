@@ -467,7 +467,7 @@ namespace piml {
         const std::string& message,
         Log::Type type
     ){
-        Log log{name, message, Log::MESSAGE};
+        Log log{name, message, type};
         logs.push_back(log);
     }
 

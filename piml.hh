@@ -422,26 +422,38 @@ namespace piml {
                 double value
             );
 
-            void linear_lift( // Lifts up the dark pixels linearly.
+            void intensity_lift( // Lifts up the dark pixels linearly.
                 double value,
                 double point = 0.5
             );
             
-            void linear_gain( // Lifts up the bright pixels linearly.
+            void intensity_gain( // Lifts up the bright pixels linearly.
                 double value,
                 double point = 0.5
             );
 
-            void linear_corners( // Manipulates the corner point 0 and the corner point 1 on the linear intensity graph. 
+            void intensity_corners( // Manipulates the corner point 0 and the corner point 1 on the linear intensity graph. 
                 double value,
                 double point = 0.5
             );
 
-            void linear_contrast( // Applies the linear contrast
+            void intensity_contrast( // Applies the linear contrast
                 double value,
                 double point = 0.5
             );
 
+            void corners( // Manipulates the corner point 0 and the corner point 1 on the linear intensity graph per channel.
+                double value,
+                double point = 0.5
+            );
+
+            void contrast( // Applies the linear contrast
+                double value,
+                double point = 0.5
+            );
+
+
+            Effect* operator ->();
     };
     
 
@@ -462,19 +474,19 @@ namespace piml {
         friend struct Effect; // Effects must be able to access this area to manipulate the image.
         friend Image pimlio_read(const std::string& filename);;
         friend void pimlio_write(const Image& image, const std::string& filename);
+        Effect effect;
 
         public:
-            Effect apply_effect;
             Image(
                 const std::vector <Pixel>& input_pixels,
                 unsigned char depth,
                 int w,
                 int h
-            ) : pixel_vector(input_pixels), bitdepth(depth) , height(h), width(w), apply_effect(*this) {}
+            ) : pixel_vector(input_pixels), bitdepth(depth) , height(h), width(w), effect(*this) {}
 
             Image(
                 const Image& img
-            ) : apply_effect(*this){
+            ) : effect(*this){
                 // We will only copy what's necessary, Not the logs or selected pixels of the other image.
                 for (const Pixel& px : img.pixel_vector){
                     pixel_vector.push_back(px);
@@ -496,6 +508,18 @@ namespace piml {
                 double c = 0.0,
                 double e = 0.0
             );
+
+            inline Effect& apply_effect(){ // Allows effect application via debugging
+                if (debugging_allowed){
+                    if (selected_pixels.size() == 0){
+                        log("piml::Image::apply_effect()", "Applying effect on " + std::to_string(selected_pixels.size()) + " pixels.", Log::WARNING);
+                    }
+                    else {
+                        log("piml::Image::apply_effect()", "Applying effect on " + std::to_string(selected_pixels.size()) + " pixels.", Log::MESSAGE);
+                    }
+                }
+                return effect;
+            }
 
             void disable_debugging();
             void enable_debugging();

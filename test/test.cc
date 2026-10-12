@@ -14,19 +14,19 @@ int main(){
     // img.apply_effect.linear_gain(-10);
 
     // Selection with the luma vs intensity
-    img.select(EVERYTHING);
-    // img.select(WHERE_LUMA_GREATER_THAN, 50);
-    img.select(WHERE_INTENSITY_GREATER_THAN_OR_EQUALS, 50);
-    img.apply_effect.brightness(100);
-    img.clear_selection();
+    // img.select(EVERYTHING);
+    // // img.select(WHERE_LUMA_GREATER_THAN, 50);
+    // img.select(WHERE_INTENSITY_GREATER_THAN_OR_EQUALS, 50);
+    // img.apply_effect.brightness(100);
+    // img.clear_selection();
 
-    img.select(EVERYTHING);
-    // img.select(WHERE_LUMA_SMALLER_THAN_OR_EQUALS, 50);
-    img.select(WHERE_INTENSITY_SMALLER_THAN_OR_EQUALS, 50);
-    img.apply_effect.brightness(-100);
-    img.clear_selection();
-    img.select(EVERYTHING);
-    img.apply_effect.linear_contrast(-25);
+    // img.select(EVERYTHING);
+    // // img.select(WHERE_LUMA_SMALLER_THAN_OR_EQUALS, 50);
+    // img.select(WHERE_INTENSITY_SMALLER_THAN_OR_EQUALS, 50);
+    // img.apply_effect.brightness(-100);
+    // img.clear_selection();
+    // img.select(EVERYTHING);
+    // img.apply_effect.linear_intensity_contrast(-25);
     // img.apply_effect.linear_corners(50);
 
 
@@ -44,5 +44,25 @@ int main(){
     // img.select(WHERE_LUMA_GREATER_THAN, 50);
     // img.apply_effect.brightness(20);
 
+    // img.select(EVERYTHING);
+    // // img.select(WHERE_LUMA_SMALLER_THAN_OR_EQUALS, 50);
+    // img.select(WHERE_INTENSITY_SMALLER_THAN_OR_EQUALS, 50);
+    // // img.apply_effect().brightness(-100);
+    // img.clear_selection();
+    // img.select(EVERYTHING);
+    // img.apply_effect().intensity_contrast(-25);
+    // img.apply_effect().corners(50);
+
+
+    img.select(EVERYTHING);
+    // img.apply_effect().corners(-25);
+    // img.apply_effect().contrast(100);
+    // img.apply_effect().contrast(-50);
+
+    img.select(piml::WHERE_INTENSITY_SMALLER_THAN, 50);
+    img.apply_effect().contrast(-50);
     pimlio_write(img, "test_output.png");
+
+
+    piml::Debugger(img).show_everything();
 }

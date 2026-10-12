@@ -125,122 +125,115 @@ express Statement of Purpose.
 #include "../../piml.hh"
 
 #include <iostream>
-#include <iomanip>
 
 namespace piml {
 
-    Debugger::Debugger(Image& img)
-        : image(img) {
+    namespace {
+
+        constexpr const char* RESET   = "\033[0m";
+        constexpr const char* RED     = "\033[91m";
+        constexpr const char* YELLOW  = "\033[93m";
+        constexpr const char* GREEN   = "\033[92m";
+        constexpr const char* CYAN    = "\033[96m";
+        constexpr const char* WHITE   = "\033[97m";
+        constexpr const char* MAGENTA = "\033[95m";
+
+        const char* color_for(Log::Type type) {
+            switch (type) {
+                case Log::MESSAGE:  return GREEN;
+                case Log::WARNING:  return YELLOW;
+                case Log::ERROR:    return RED;
+                case Log::ACTIVITY: return CYAN;
+            }
+
+            return WHITE;
+        }
+
+        const char* label_for(Log::Type type) {
+            switch (type) {
+                case Log::MESSAGE:  return "MESSAGE";
+                case Log::WARNING:  return "WARNING";
+                case Log::ERROR:    return "ERROR";
+                case Log::ACTIVITY: return "ACTIVITY";
+            }
+
+            return "UNKNOWN";
+        }
+
+        void print_log(const Log& log) {
+            std::cout
+                << color_for(log.type)
+                << '[' << label_for(log.type) << "] "
+                << MAGENTA << log.name
+                << WHITE << ": "
+                << color_for(log.type) << log.message
+                << RESET << '\n';
+        }
+
+        void print_logs(
+            const std::vector<Log>& logs,
+            Log::Type type
+        ) {
+            for (const Log& log : logs) {
+                if (log.type == type)
+                    print_log(log);
+            }
+        }
+
     }
 
-    void Debugger::show_messages() {
-        for (const Log& log : image.logs) {
-            if (log.type != Log::MESSAGE)
-                continue;
+    Debugger::Debugger(Image& img)
+        : image(img) {}
 
-            std::cout
-                << "[MESSAGE] "
-                << log.name
-                << ": "
-                << log.message
-                << '\n';
-        }
+    void Debugger::show_messages() {
+        print_logs(image.logs, Log::MESSAGE);
     }
 
     void Debugger::show_warnings() {
-        for (const Log& log : image.logs) {
-            if (log.type != Log::WARNING)
-                continue;
-
-            std::cout
-                << "[WARNING] "
-                << log.name
-                << ": "
-                << log.message
-                << '\n';
-        }
+        print_logs(image.logs, Log::WARNING);
     }
 
     void Debugger::show_errors() {
-        for (const Log& log : image.logs) {
-            if (log.type != Log::ERROR)
-                continue;
-
-            std::cout
-                << "[ERROR] "
-                << log.name
-                << ": "
-                << log.message
-                << '\n';
-        }
+        print_logs(image.logs, Log::ERROR);
     }
 
     void Debugger::show_activities() {
-        for (const Log& log : image.logs) {
-            if (log.type != Log::ACTIVITY)
-                continue;
-
-            std::cout
-                << "[ACTIVITY] "
-                << log.name
-                << ": "
-                << log.message
-                << '\n';
-        }
+        print_logs(image.logs, Log::ACTIVITY);
     }
 
     void Debugger::show_everything() {
-        std::cout << "\n========== PIML DEBUGGER ==========\n";
+        std::cout
+            << MAGENTA
+            << "\n========== PIML DEBUGGER ==========\n"
+            << RESET;
 
-        std::cout << "\nImage information:\n";
-        std::cout << "Width:     " << image.width << '\n';
-        std::cout << "Height:    " << image.height << '\n';
-        std::cout << "Bit depth: "
-                  << static_cast<int>(image.bitdepth)
-                  << '\n';
+        std::cout << CYAN << "\nImage information:\n" << RESET;
 
-        std::cout << "Pixels:    "
-                  << image.pixel_vector.size()
-                  << '\n';
+        std::cout << WHITE
+                  << "Width:     " << image.width << '\n'
+                  << "Height:    " << image.height << '\n'
+                  << "Bit depth: "
+                  << static_cast<int>(image.bitdepth) << '\n'
+                  << "Pixels:    "
+                  << image.pixel_vector.size() << '\n'
+                  << "Selected:  "
+                  << image.selected_pixels.size() << '\n'
+                  << RESET;
 
-        std::cout << "Selected:  "
-                  << image.selected_pixels.size()
-                  << '\n';
+        std::cout << CYAN
+                  << "\nLogs:\n"
+                  << RESET;
 
-        std::cout << "\nPixels:\n";
-
-        std::cout << std::fixed
-                  << std::setprecision(6);
-
-        for (std::size_t i = 0;
-             i < image.pixel_vector.size();
-             ++i) {
-
-            const Pixel& pixel = image.pixel_vector[i];
-
-            std::cout
-                << "Pixel[" << i << "] "
-                << "RGBA("
-                << pixel.r << ", "
-                << pixel.g << ", "
-                << pixel.b << ", "
-                << pixel.a
-                << ")\n";
+        // IMPORTANT:
+        // Ek hi loop, bina category sorting ke.
+        // Vector ka original order preserve hota hai.
+        for (const Log& log : image.logs) {
+            print_log(log);
         }
 
-        std::cout << "\nMessages:\n";
-        show_messages();
-
-        std::cout << "\nWarnings:\n";
-        show_warnings();
-
-        std::cout << "\nErrors:\n";
-        show_errors();
-
-        std::cout << "\nActivities:\n";
-        show_activities();
-
-        std::cout << "\n===================================\n";
+        std::cout << MAGENTA
+                  << "\n===================================\n"
+                  << RESET;
     }
 
     void Debugger::clear_everything() {
@@ -250,7 +243,6 @@ namespace piml {
     void Debugger::clear_messages() {
         for (auto it = image.logs.begin();
              it != image.logs.end();) {
-
             if (it->type == Log::MESSAGE)
                 it = image.logs.erase(it);
             else
@@ -261,7 +253,6 @@ namespace piml {
     void Debugger::clear_warnings() {
         for (auto it = image.logs.begin();
              it != image.logs.end();) {
-
             if (it->type == Log::WARNING)
                 it = image.logs.erase(it);
             else
@@ -272,7 +263,6 @@ namespace piml {
     void Debugger::clear_errors() {
         for (auto it = image.logs.begin();
              it != image.logs.end();) {
-
             if (it->type == Log::ERROR)
                 it = image.logs.erase(it);
             else
@@ -283,7 +273,6 @@ namespace piml {
     void Debugger::clear_activities() {
         for (auto it = image.logs.begin();
              it != image.logs.end();) {
-
             if (it->type == Log::ACTIVITY)
                 it = image.logs.erase(it);
             else
@@ -291,7 +280,6 @@ namespace piml {
         }
     }
 
-    Debugger::~Debugger() {
-    }
+    Debugger::~Debugger() = default;
 
 }
