@@ -25,65 +25,7 @@ The library provides a flexible system for selecting pixels, refining selections
 
 ## Documentation
 
-The complete documentation and API reference are available in:
-
-```text
-docs/index.html
-````
-
-Open **`docs/index.html`** in your browser for the complete documentation, including API usage, examples, effects, selection predicates, channels, image I/O, debugging, and architecture details.
-
-## Quick Start
-
-### Include PIML
-
-```cpp
-#include "piml.hh"
-#include "pimlio.hh"
-```
-
-### Read an image
-
-```cpp
-auto image = piml::pimlio_read("img/test.png");
-```
-
-### Select pixels
-
-```cpp
-image.select(piml::EVERYTHING);
-```
-
-### Apply an effect
-
-```cpp
-image.apply_effect.brightness(10);
-```
-
-### Write the result
-
-```cpp
-piml::pimlio_write(image, "output.png");
-```
-
-A complete example:
-
-```cpp
-#include "piml.hh"
-#include "pimlio.hh"
-
-int main()
-{
-    using namespace piml;
-
-    auto image = pimlio_read("img/test.png");
-
-    image.select(EVERYTHING);
-    image.apply_effect.brightness(10);
-
-    pimlio_write(image, "output.png");
-}
-```
+The complete documentation and API reference are available in: `docs/index.html`
 
 ## Requirements
 
@@ -122,32 +64,6 @@ Clean build artifacts:
 
 ```bash
 ./clean.sh
-```
-
-## Project Structure
-
-```text
-piml/
-├── build.cc
-├── build.sh
-├── clean.sh
-├── piml.hh
-├── pimlio.hh
-├── README.md
-├── test.sh
-├── docs/
-│   └── index.html
-├── img/
-│   └── test.png
-├── src/
-│   ├── pimlio.cc
-│   ├── classes/
-│   │   ├── Debugger.cc
-│   │   └── Image.cc
-│   └── effects/
-│       └── brightness.cc
-└── test/
-    └── test.cc
 ```
 
 ## Contributing

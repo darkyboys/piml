@@ -44,7 +44,7 @@ Docs.add({
 
             img.select(EVERYTHING);
 
-            img.apply_effect.brightness(10);
+            img.apply_effect().brightness(10);
 
             pimlio_write(img, "output.png");
         }
@@ -93,7 +93,7 @@ Which effect?
             piml::CHANNEL_BLUE
         );
 
-        image.apply_effect.brightness(10);
+        image.apply_effect().brightness(10);
     `
 });
 
@@ -220,7 +220,7 @@ Write image
 
             image.select(piml::EVERYTHING);
 
-            image.apply_effect.brightness(10);
+            image.apply_effect().brightness(10);
 
             piml::pimlio_write(
                 image,
@@ -344,7 +344,7 @@ HOW   → Which effect?
             70
         );
 
-        image.apply_effect.brightness(10);
+        image.apply_effect().brightness(10);
     `
 });
 
@@ -370,7 +370,7 @@ Docs.add({
             50
         );
 
-        image.apply_effect.brightness(-20);
+        image.apply_effect().brightness(-20);
 
         // Reset selection.
         image.select(piml::EVERYTHING);
@@ -380,7 +380,7 @@ Docs.add({
             50
         );
 
-        image.apply_effect.brightness(20);
+        image.apply_effect().brightness(20);
     `
 });
 
@@ -453,7 +453,7 @@ piml::CHANNEL_ALPHA
             piml::CHANNEL_GREEN
         );
 
-        image.apply_effect.brightness(-20);
+        image.apply_effect().brightness(-20);
     `
 });
 
@@ -481,7 +481,7 @@ Docs.add({
             piml::CHANNEL_BLUE
         );
 
-        image.apply_effect.brightness(10);
+        image.apply_effect().brightness(10);
     `
 });
 
@@ -786,7 +786,7 @@ Docs.add({
     title: "Effects",
     category: "Effects",
     description: `
-        <p>PIML exposes image effects through <code>Image::apply_effect</code>.</p>
+        <p>PIML exposes image effects through <code>Image::apply_effect()</code>.</p>
 
         <p>Users do not need to manually construct an effect object.</p>
 
@@ -801,11 +801,11 @@ Effect    → HOW
 
         <p>An effect can therefore be reused with completely different pixel selections without requiring separate implementations for each selection type.</p>
     `,
-    tags: ["effects", "apply_effect", "architecture"],
+    tags: ["effects", "apply_effect()", "architecture"],
     example: `
         image.select(piml::EVERYTHING);
 
-        image.apply_effect.brightness(10);
+        image.apply_effect().brightness(10);
     `
 });
 
@@ -828,9 +828,9 @@ Docs.add({
     example: `
         image.select(piml::EVERYTHING);
 
-        image.apply_effect.brightness(20);
+        image.apply_effect().brightness(20);
 
-        image.apply_effect.brightness(-20);
+        image.apply_effect().brightness(-20);
     `
 });
 
@@ -851,7 +851,7 @@ Docs.add({
             piml::CHANNEL_RED
         );
 
-        image.apply_effect.brightness(20);
+        image.apply_effect().brightness(20);
     `
 });
 
@@ -883,10 +883,10 @@ Docs.add({
     example: `
         image.select(piml::EVERYTHING);
 
-        image.apply_effect.linear_corners(20);
+        image.apply_effect().linear_corners(20);
 
         // Extreme negative transformation.
-        image.apply_effect.linear_corners(-100);
+        image.apply_effect().linear_corners(-100);
     `
 });
 
@@ -913,7 +913,7 @@ Docs.add({
     example: `
         image.select(piml::EVERYTHING);
 
-        image.apply_effect.linear_contrast(20);
+        image.apply_effect().linear_contrast(20);
     `
 });
 
@@ -969,7 +969,7 @@ Docs.add({
     example: `
         image.select(piml::EVERYTHING);
 
-        image.apply_effect.linear_gain(
+        image.apply_effect().linear_gain(
             20,
             0.5
         );
@@ -993,7 +993,7 @@ Docs.add({
     example: `
         image.select(piml::EVERYTHING);
 
-        image.apply_effect.linear_lift(
+        image.apply_effect().linear_lift(
             20,
             0.5
         );
@@ -1023,7 +1023,7 @@ Docs.add({
     example: `
         image.select(piml::EVERYTHING);
 
-        image.apply_effect.smoothing_brightness(20);
+        image.apply_effect().smoothing_brightness(20);
     `
 });
 
@@ -1048,7 +1048,7 @@ brightness * change
     example: `
         image.select(piml::EVERYTHING);
 
-        image.apply_effect.smoothing_brightness_opposite(20);
+        image.apply_effect().smoothing_brightness_opposite(20);
     `
 });
 
@@ -1144,7 +1144,7 @@ Apply effect
             50
         );
 
-        image.apply_effect.brightness(-20);
+        image.apply_effect().brightness(-20);
 
         image.select(piml::EVERYTHING);
 
@@ -1153,7 +1153,7 @@ Apply effect
             50
         );
 
-        image.apply_effect.brightness(20);
+        image.apply_effect().brightness(20);
     `
 });
 
@@ -1197,7 +1197,7 @@ Repeat
             piml::CHANNEL_BLUE
         );
 
-        image.apply_effect.brightness(10);
+        image.apply_effect().brightness(10);
 
         image.select(piml::EVERYTHING);
 
@@ -1210,7 +1210,7 @@ Repeat
             piml::CHANNEL_RED
         );
 
-        image.apply_effect.brightness(10);
+        image.apply_effect().brightness(10);
     `
 });
 
@@ -1231,20 +1231,20 @@ Docs.add({
     example: `
         img.select(piml::EVERYTHING);
 
-        img.apply_effect.brightness(5);
+        img.apply_effect().brightness(5);
 
         img.select(piml::CHANNEL_RED);
 
-        img.apply_effect.linear_contrast(10);
+        img.apply_effect().linear_contrast(10);
 
         img.select(piml::EVERYTHING);
 
         img.select(piml::CHANNEL_BLUE);
 
-        img.apply_effect.linear_gain(-10);
+        img.apply_effect().linear_gain(-10);
 
         // Optional refinement:
-        // img.apply_effect.smoothing_brightness(10);
+        // img.apply_effect().smoothing_brightness(10);
     `
 });
 
@@ -1274,7 +1274,7 @@ HOW   → linear lift
             40
         );
 
-        image.apply_effect.linear_lift(
+        image.apply_effect().linear_lift(
             20,
             0.5
         );
@@ -1500,7 +1500,7 @@ Docs.add({
                               └──────────┬──────────┘
                                          │
                                          ▼
-                                   apply_effect
+                                   apply_effect()
                                          │
                                          ▼
                                         HOW
@@ -1524,7 +1524,7 @@ Docs.add({
 
         <p>The image interface provides access to selection operations, channel selection, effects, debugging state, and image-related information.</p>
 
-        <p>The effect interface is exposed directly through <code>Image::apply_effect</code>.</p>
+        <p>The effect interface is exposed directly through <code>Image::apply_effect()</code>.</p>
     `,
     tags: ["Image", "class", "architecture"]
 });
@@ -1553,14 +1553,14 @@ Docs.add({
         <p>Effects are exposed through:</p>
 
         <pre>
-image.apply_effect
+image.apply_effect()
         </pre>
 
         <p>An effect should not need to know whether its input selection came from the entire image, a luma predicate, an intensity predicate, a channel selection, or another future selection mechanism.</p>
 
         <p>This makes effects reusable and keeps selection logic separate from image transformations.</p>
     `,
-    tags: ["Effect", "effects", "architecture", "apply_effect"]
+    tags: ["Effect", "effects", "architecture", "apply_effect()"]
 });
 
 
@@ -1714,7 +1714,7 @@ Docs.add({
             40
         );
 
-        image.apply_effect.brightness(-10);
+        image.apply_effect().brightness(-10);
 
         // Independent second operation.
         image.select(piml::EVERYTHING);
@@ -1724,7 +1724,7 @@ Docs.add({
             60
         );
 
-        image.apply_effect.brightness(10);
+        image.apply_effect().brightness(10);
     `
 });
 
