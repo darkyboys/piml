@@ -131,7 +131,6 @@ express Statement of Purpose.
 #include <string>
 
 namespace piml {
-
     struct Pixel{
         double r,
                g,
@@ -280,7 +279,7 @@ namespace piml {
         }
 
         inline double average(){
-            return std::clamp((r + b + b) / 3.0, 0.0, 1.0);
+            return std::clamp((r + g + b) / 3.0, 0.0, 1.0);
         }
 
         inline double get_r(){
@@ -301,6 +300,57 @@ namespace piml {
         inline double get_a(){
             if (s != nullptr) return *s;
             else return a;
+        }
+
+
+        inline void set_r(double value){
+            if (s != nullptr) *s = std::clamp(value, 0.0, 1.0);
+            else r = std::clamp(value, 0.0, 1.0);
+        }
+
+        inline void set_g(double value){
+            if (s != nullptr) *s = std::clamp(value, 0.0, 1.0);
+            else g = std::clamp(value, 0.0, 1.0);
+        }
+
+        inline void set_b(double value){
+            if (s != nullptr) *s = std::clamp(value, 0.0, 1.0);
+            else b = std::clamp(value, 0.0, 1.0);
+        }
+
+        inline void set_a(double value){
+            if (s != nullptr) *s = std::clamp(value, 0.0, 1.0);
+            else a = std::clamp(value, 0.0, 1.0);
+        }
+
+        inline double get_selected(){
+            return *s;
+        }
+
+        inline void max(){
+            if (s != nullptr);
+            else {
+                if (r >= g && r >= b) {s = &r;return;}
+                if (g >= b) {s = &g;return;}
+                s = &b;return;
+            }
+        }
+
+        inline void min(){
+            if (s != nullptr);
+            else {
+                if (r <= g && r <= b) {s = &r;return;}
+                if (g <= b) {s = &g;return;}
+                s = &b;return;
+            }
+        }
+
+        inline void clear_selection(){ // They both does the same thing to keep the API consistent
+            s = nullptr;
+        }
+
+        inline void clean_selection(){
+            s = nullptr;
         }
 
         inline double luma(){
