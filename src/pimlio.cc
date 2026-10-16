@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace piml {
 
@@ -1279,6 +1280,22 @@ namespace piml {
                         static_cast<std::size_t>(width) +
                         static_cast<std::size_t>(x)
                     ];
+
+                // std::cout << pixel.index <<"\n\n";
+                pixel.index = static_cast<std::size_t>(y) *
+                              static_cast<std::size_t>(width) +
+                              static_cast<std::size_t>(x);
+
+                // std::cout << pixel.index <<"\n\n";
+                
+
+                /*
+                    static_cast<std::size_t>(y) *
+                    static_cast<std::size_t>(width) +
+                    static_cast<std::size_t>(x);
+
+                    This whole black magic gives the index of the pixel (Basically the current index)
+                */
                 
                 if (bit_depth == 8) {
                     pixel.r =
@@ -1336,13 +1353,18 @@ namespace piml {
     
         // IMPORTANT:
         // Constructor is now (pixels, depth, width, height).
+
         Image image(
             pixels,
             bit_depth,
             static_cast<int>(width),
             static_cast<int>(height)
         );
-    
+
+        // for (std::size_t i = 0;i < image.pixel_vector.size();i++){
+        //     std::cout << "Pixel index: "<<image.pixel_vector[i].index<<'\n';
+        // }
+
         return image;
     }
     

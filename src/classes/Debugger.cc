@@ -280,6 +280,12 @@ namespace piml {
         }
     }
 
+    void Debugger::show_pixels() {
+        for (const Pixel& p : image.pixel_vector)
+            std::cout << "Pixel index: " << p.index
+                      << "\n --- Pixel RGBA(" << p.r <<','<< p.g<<',' << p.b<<',' << p.a<<")\n\n";
+    }
+
     Debugger::~Debugger() = default;
 
 }

@@ -124,6 +124,7 @@ express Statement of Purpose.
 
 // This file only implements the Image class
 #include "../../piml.hh"
+#include <iostream>
 
 namespace piml {
     void Image::select(
@@ -432,6 +433,28 @@ namespace piml {
                     "Selected the pixels where the luma is in between " + std::to_string(100.0 * a) + "%. and " + std::to_string(100.0 * b) + "%.",
                     Log::ACTIVITY
                 ); // Debugging
+                break;
+
+            case REMAINING:
+                pixel_buffer.clear();
+                index_buffer.clear();
+                index_buffer.reserve(pixel_vector.size());
+                for (std::size_t i = 0;i < pixel_vector.size();i++)
+                    index_buffer.push_back(0);
+                // std::cout << pixel_vector.size()<<'\n';
+                // std::cout << index_buffer.size()<<'\n';
+                
+                for (std::size_t i = 0; i < selected_pixels.size();i++){
+                    index_buffer[selected_pixels[i]->index] = 1;
+                }
+
+                selected_pixels.clear();
+                for (std::size_t i = 0;i < index_buffer.size();i++){
+                    if (index_buffer[i] == 0){ // Zero means not selected
+                        selected_pixels.push_back(&pixel_vector[i]);
+                    }
+                }
+
                 break;
                 
             default:

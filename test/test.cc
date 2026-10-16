@@ -60,9 +60,21 @@ int main(){
     // img.apply_effect().contrast(-50);
 
     img.select(piml::WHERE_INTENSITY_SMALLER_THAN, 50);
-    img.apply_effect().contrast(-50);
+    // img.apply_effect().contrast(-50);
+    img.apply_effect().brightness(-100);
+    img.select(REMAINING);
+    img.apply_effect().brightness(100);
+    img.select(REMAINING);
+    img.apply_effect().brightness(50);
+    img.apply_effect().brightness(-50);
+    img.select(REMAINING);
+    img.select(CHANNEL_GREEN);
+    img.apply_effect().brightness(-50);
+    img.select(CHANNEL_BLUE);
+
     pimlio_write(img, "test_output.png");
 
-
-    piml::Debugger(img).show_everything();
+    piml::Debugger db(img);
+    db.show_everything();
+    // db.show_pixels();
 }

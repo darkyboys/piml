@@ -137,6 +137,7 @@ namespace piml {
                b,
                a;
         double* s = nullptr; // selected channel, This will be used if not nullptr
+        unsigned long long index; // This will only store the index of the pixel in an image to select it properly.
 
         inline void add(
             double value
@@ -370,16 +371,11 @@ namespace piml {
             g(other.g),
             b(other.b),
             a(other.a),
-            s(nullptr)
+            s(nullptr),
+            index{other.index}
         {}
 
-        Pixel(Pixel&& other): // Move-ish copy constructor
-            r(other.r),
-            g(other.g),
-            b(other.b),
-            a(other.a),
-            s(nullptr)
-        {}
+        Pixel(Pixel&& other) = default;
 
         Pixel& operator=(const Pixel& other) // Copy assignment
         {
@@ -390,24 +386,13 @@ namespace piml {
             g = other.g;
             b = other.b;
             a = other.a;
+            index = other.index;
         
             // Don't touch s.
             return *this;
         }
 
-        Pixel& operator=(Pixel&& other) // Move-ish copy assignment
-        {
-            if (this == &other)
-                return *this;
-        
-            r = other.r;
-            g = other.g;
-            b = other.b;
-            a = other.a;
-        
-            // Don't touch s.
-            return *this;
-        }
+        Pixel& operator=(Pixel&& other) = default;
     };
 
     enum Selection{
@@ -427,7 +412,8 @@ namespace piml {
         WHERE_LUMA_SMALLER_THAN_OR_EQUALS,
         WHERE_LUMA_SMALLER_THAN,
         WHERE_LUMA_BETWEEN,
-        WHERE_LUMA_EQUALS
+        WHERE_LUMA_EQUALS,
+        REMAINING
     };
 
     struct Log{
@@ -513,6 +499,7 @@ namespace piml {
         std::vector <Pixel*> selected_pixels; // This will only store the pixels.
         std::vector <Pixel*> pixel_buffer; // This will only store the pixels.
         std::vector <Log> logs; // Debug logs when needed.
+        std::vector <unsigned long long> index_buffer;
 
         unsigned char bitdepth = 0; // This must not be zero!
         bool debugging_allowed = true; // This state will toggle if the debugging is allowed or not
@@ -605,6 +592,7 @@ namespace piml {
             void clear_warnings();
             void clear_errors();
             void clear_activities();
+            void show_pixels();
         
             ~Debugger();
 

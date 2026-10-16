@@ -421,7 +421,7 @@ int main()
     benchmark(
         "brightness",
         [&]() {
-            image.apply_effect.brightness(
+            image.apply_effect().brightness(
                 10
             );
         },
@@ -432,9 +432,17 @@ int main()
     benchmark(
         "brightness - negative",
         [&]() {
-            image.apply_effect.brightness(
+            image.apply_effect().brightness(
                 -10
             );
+        },
+        1000
+    );
+
+    benchmark(
+        "select - remaining",
+        [&]() {
+            image.select(piml::REMAINING);
         },
         1000
     );
@@ -466,7 +474,7 @@ int main()
     benchmark(
         "brightness",
         [&]() {
-            image.apply_effect.brightness(
+            image.apply_effect().brightness(
                 10
             );
         },
@@ -492,9 +500,17 @@ int main()
     benchmark(
         "brightness",
         [&]() {
-            image.apply_effect.brightness(
+            image.apply_effect().brightness(
                 10
             );
+        },
+        1000
+    );
+
+    benchmark(
+        "select - remaining",
+        [&]() {
+            image.select(piml::REMAINING);
         },
         1000
     );
@@ -524,6 +540,14 @@ int main()
     );
 
     benchmark(
+        "select - remaining",
+        [&]() {
+            image.select(piml::REMAINING);
+        },
+        1000
+    );
+
+    benchmark(
         "select - clear",
         [&]() {
             image.clear_selection();
@@ -540,33 +564,33 @@ int main()
     );
 
     benchmark(
-        "linear contrast",
+        "intensity contrast",
         [&]() {
-            image.apply_effect.linear_contrast(10);
+            image.apply_effect().intensity_contrast(10);
         },
         1000
     );
 
     benchmark(
-        "linear corners",
+        "intensity corners",
         [&]() {
-            image.apply_effect.linear_corners(10);
+            image.apply_effect().intensity_corners(10);
         },
         1000
     );
 
     benchmark(
-        "linear gain",
+        "intensity gain",
         [&]() {
-            image.apply_effect.linear_gain(10);
+            image.apply_effect().intensity_gain(10);
         },
         1000
     );
 
     benchmark(
-        "linear lift",
+        "intensity lift",
         [&]() {
-            image.apply_effect.linear_lift(10);
+            image.apply_effect().intensity_lift(10);
         },
         1000
     );
@@ -574,7 +598,7 @@ int main()
     benchmark(
         "smoothing brightness",
         [&]() {
-            image.apply_effect.smoothing_brightness(10);
+            image.apply_effect().smoothing_brightness(10);
         },
         1000
     );
@@ -582,7 +606,15 @@ int main()
     benchmark(
         "smoothing brightness opposite",
         [&]() {
-            image.apply_effect.smoothing_brightness_opposite(10);
+            image.apply_effect().smoothing_brightness_opposite(10);
+        },
+        1000
+    );
+
+    benchmark(
+        "select - remaining",
+        [&]() {
+            image.select(piml::REMAINING);
         },
         1000
     );
