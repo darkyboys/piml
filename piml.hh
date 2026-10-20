@@ -130,6 +130,7 @@ express Statement of Purpose.
 #include <vector>
 #include <string>
 
+
 namespace piml {
     struct Pixel{
         double r,
@@ -413,7 +414,8 @@ namespace piml {
         WHERE_LUMA_SMALLER_THAN,
         WHERE_LUMA_BETWEEN,
         WHERE_LUMA_EQUALS,
-        REMAINING
+        REMAINING,
+        WARM_COLORS
     };
 
     struct Log{
@@ -511,6 +513,13 @@ namespace piml {
         friend struct Effect; // Effects must be able to access this area to manipulate the image.
         friend Image pimlio_read(const std::string& filename);;
         friend void pimlio_write(const Image& image, const std::string& filename);
+        friend Image pimlio_give_lut_image(int size);
+
+        friend void pimlio_export_lut(
+            const Image& image,
+            const std::string& outputCube,
+            int size
+        );
         Effect effect;
 
         public:

@@ -25,7 +25,7 @@ The library provides a flexible system for selecting pixels, refining selections
 
 ## Documentation
 
-The complete documentation and API reference are available in: `docs/index.html`
+The complete documentation and API reference are available in: `documentation.md`
 
 ## Requirements
 

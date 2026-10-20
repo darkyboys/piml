@@ -456,6 +456,31 @@ namespace piml {
                 }
 
                 break;
+
+
+            case WARM_COLORS:
+                pixel_buffer.clear();
+                index_buffer.clear();
+                selected_pixels.clear();
+
+                for (Pixel& px : pixel_vector){
+                    double r = px.get_r();
+                    double g = px.get_g();
+                    double b = px.get_b();
+                    if (b < r and b < g){ // Blue must be smaller than both overall
+                        if (g > r){ // This can be true for warm/yellow-ish green shades
+                            if ((r/g) <= 0.25){ // Only 25% difference should be there at max (25/100) = 0.25
+                                selected_pixels.push_back(&px);
+                            }
+                        }
+                        else {
+                            selected_pixels.push_back(&px);
+                        }
+                    }
+
+                }
+
+                break;
                 
             default:
                 if (debugging_allowed) log( // Debugging

@@ -54,27 +54,68 @@ int main(){
     // img.apply_effect().corners(50);
 
 
-    img.select(EVERYTHING);
-    // img.apply_effect().corners(-25);
-    // img.apply_effect().contrast(100);
-    // img.apply_effect().contrast(-50);
+    // img.select(EVERYTHING);
+    // // img.apply_effect().corners(-25);
+    // // img.apply_effect().contrast(100);
+    // // img.apply_effect().contrast(-50);
 
-    img.select(piml::WHERE_INTENSITY_SMALLER_THAN, 50);
-    // img.apply_effect().contrast(-50);
-    img.apply_effect().brightness(-100);
-    img.select(REMAINING);
-    img.apply_effect().brightness(100);
-    img.select(REMAINING);
-    img.apply_effect().brightness(50);
-    img.apply_effect().brightness(-50);
-    img.select(REMAINING);
-    img.select(CHANNEL_GREEN);
-    img.apply_effect().brightness(-50);
+    // img.select(piml::WHERE_INTENSITY_SMALLER_THAN, 50);
+    // // img.apply_effect().contrast(-50);
+    // img.apply_effect().brightness(-100);
+    // img.select(REMAINING);
+    // img.apply_effect().brightness(100);
+    // img.select(REMAINING);
+    // img.apply_effect().brightness(50);
+    // img.apply_effect().brightness(-50);
+    // img.select(REMAINING);
+    // img.select(CHANNEL_GREEN);
+    // img.apply_effect().brightness(-50);
+    // img.select(CHANNEL_BLUE);
+
+    // Advanced Teal and Orange effect with basic effects
+    img.select(EVERYTHING);
+    img.select(CHANNEL_RED);
+    img.apply_effect().brightness(-5);
+    img.clean_selection();
+    img.select(WARM_COLORS);
+    img.select(CHANNEL_RED);
+
+    img.apply_effect().smoothing_brightness_opposite(5);
+
     img.select(CHANNEL_BLUE);
+    img.apply_effect().smoothing_brightness_opposite(-5);
+
+    img.select(REMAINING);
+    img.select(CHANNEL_RED);
+    img.apply_effect().smoothing_brightness(-10);
+    
+
 
     pimlio_write(img, "test_output.png");
 
     piml::Debugger db(img);
     db.show_everything();
+
+
+    // Lut image
+    auto lut = pimlio_give_lut_image(64);
+
+    lut.select(EVERYTHING);
+    lut.select(CHANNEL_RED);
+    lut.apply_effect().brightness(-5);
+    lut.clean_selection();
+    lut.select(WARM_COLORS);
+    lut.select(CHANNEL_RED);
+
+    lut.apply_effect().smoothing_brightness_opposite(5);
+
+    lut.select(CHANNEL_BLUE);
+    lut.apply_effect().smoothing_brightness_opposite(-5);
+
+    lut.select(REMAINING);
+    lut.select(CHANNEL_RED);
+    lut.apply_effect().smoothing_brightness(-10);
+
+    pimlio_export_lut(lut, "PIML - Advanced Teal & Orange (DEMO).cube", 64);
     // db.show_pixels();
 }

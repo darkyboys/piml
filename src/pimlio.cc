@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <iomanip>
 
 namespace piml {
 
@@ -1600,5 +1601,100 @@ namespace piml {
             throw std::runtime_error(
                 "Failed to finish writing PNG.");
     }
+
+    // LUT Control
+    Image pimlio_give_lut_image(int size)
+    {
+        if (size < 2)
+            throw std::invalid_argument("LUT size must be at least 2.");
+
+        const size_t samples =
+            static_cast<size_t>(size) * size * size;
+
+        const int width = static_cast<int>(
+            std::min<size_t>(256, samples)
+        );
+
+        const int height = static_cast<int>(
+            (samples + width - 1) / width
+        );
+
+        std::vector<Pixel> pixels(samples);
+
+        size_t index = 0;
+
+        // Standard .cube ordering:
+        // R changes fastest, then G, then B.
+        for (int b = 0; b < size; ++b) {
+            for (int g = 0; g < size; ++g) {
+                for (int r = 0; r < size; ++r) {
+                    Pixel& p = pixels[index];
+
+                    p.r = static_cast<double>(
+                        std::llround(
+                            static_cast<double>(r) * 65535.0 / (size - 1)
+                        )
+                    ) / 65535.0;
+
+                    p.g = static_cast<double>(
+                        std::llround(
+                            static_cast<double>(g) * 65535.0 / (size - 1)
+                        )
+                    ) / 65535.0;
+
+                    p.b = static_cast<double>(
+                        std::llround(
+                            static_cast<double>(b) * 65535.0 / (size - 1)
+                        )
+                    ) / 65535.0;
+
+                    p.a = 1.0;
+                    p.index = index;
+
+                    ++index;
+                }
+            }
+        }
+
+        return Image(pixels, 16, width, height);
+    }
+
+    void pimlio_export_lut(
+        const Image& image,
+        const std::string& outputCube,
+        int size
+    )
+    {
+        if (size < 2)
+            throw std::invalid_argument("LUT size must be at least 2.");
+
+        const size_t samples =
+            static_cast<size_t>(size) * size * size;
+
+        if (image.pixel_vector.size() < samples)
+            throw std::invalid_argument(
+                "Image does not contain enough pixels for this LUT size."
+            );
+
+        std::ofstream out(outputCube);
+
+        if (!out)
+            throw std::runtime_error(
+                "Could not open output CUBE: " + outputCube
+            );
+
+        out << "# Exported by PIML\n";
+        out << "LUT_3D_SIZE " << size << "\n\n";
+        out << std::setprecision(10);
+
+        for (size_t i = 0; i < samples; ++i) {
+            const Pixel& p = image.pixel_vector[i];
+
+            out << std::clamp(p.r, 0.0, 1.0) << ' '
+                << std::clamp(p.g, 0.0, 1.0) << ' '
+                << std::clamp(p.b, 0.0, 1.0) << '\n';
+        }
+    }
+
 
 } // namespace piml

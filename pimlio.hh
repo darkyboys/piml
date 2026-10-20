@@ -159,6 +159,19 @@ namespace piml {
         const std::string& filename
     );
 
+
+
+    // For lut control
+
+    Image pimlio_give_lut_image(int size);
+
+    void pimlio_export_lut(
+        const Image& image,
+        const std::string& outputCube,
+        int size
+    );
+
+
 }
 
 #endif
