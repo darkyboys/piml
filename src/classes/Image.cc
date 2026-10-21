@@ -481,6 +481,13 @@ namespace piml {
                 }
 
                 break;
+
+
+
+            case WHERE_COLORS_MATCHES:
+                
+
+                break;
                 
             default:
                 if (debugging_allowed) log( // Debugging
@@ -488,6 +495,23 @@ namespace piml {
                     "Invalid argument passed to select. What is `" + std::to_string(selection) + "`.",
                     Log::ERROR
                 ); // Debugging
+        }
+    }
+
+    void Image::select(
+        Selection selection,
+        const Color& color,
+        double distance
+    ){
+        pixel_buffer.clear();
+        index_buffer.clear();
+        selected_pixels.clear();
+        double distance_percentage = normalize_percentage(distance);
+
+        for (Pixel& px : pixel_vector){
+            if (std::clamp(get_distance_between_colors(color, {px.r, px.g, px.b}), 0.0, 1.0) <= distance_percentage){
+                selected_pixels.push_back(&px);
+            }
         }
     }
 

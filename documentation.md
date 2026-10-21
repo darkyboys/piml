@@ -123,6 +123,16 @@ PIML's selection engine is a core part of its image-processing model.
 
 A selection determines which pixels are available to subsequent operations. Depending on the selection type, pixels may be chosen based on the entire image, a channel, intensity, luma, or a custom color-selection rule.
 
+### Color
+`Color` is a type struct in the **PIML Library** to provide the *I/O* System for the developer facing API.
+
+It contains 3 doubles:
+ - **r**: This stores the channel red value
+ - **g**: This stores the channel green value
+ - **b**: This stores the channel blue value
+
+The values can be anything as long as a `double` on your system allows but `PIML` itself expects these values to be somewhere between `0.0` to `1.0`, If you go above or bellow them the library will internally clamp it anyways.
+
 ### Selecting the Entire Image
 
 ```cpp
@@ -243,6 +253,7 @@ The following names are available in the library's effect interface.
 | `intensity_contrast(value)` | Decreases the contrast by giving `intensity_corners` value divided by 2 |
 | `corners(value)` | Works same as `linear_corners` but works independently for each channel (The value 100 here actually inverts the entire image) |
 | `contrast(value)` | Decreases the contrast by giving `corners` value divided by 2 (The standard contrast) |
+| `color_brightness(value, color, distance)` | This effect applies the brightness depending on how far a color is from the given color. If the color is too far / difference like (Blue) and the input color is (Red) then the brightness won't be increased. This calculates independently of selection (Giving the correct color selection) but respects the selection when applying the brightness change. This is recommended in advanced color correction and grading. |
 
 Always remember that you are directly working with the image on a graph so be careful while applying effects.
 
@@ -287,25 +298,26 @@ int main() {
     using namespace piml;
 
     auto img = pimlio_read("img/test.png");
-
-    // Adjust red across the entire image.
     img.select(EVERYTHING);
     img.select(CHANNEL_RED);
     img.apply_effect().brightness(-5);
     img.clean_selection();
 
-    // Apply separate treatments to warm-colored pixels.
-    img.select(WARM_COLORS);
+    Color col = {0.0, 1.0, 0.0};
+    img.select(piml::WHERE_COLORS_MATCHES, col, 78);
     img.select(CHANNEL_RED);
-    img.apply_effect().smoothing_brightness_opposite(5);
+    img.apply_effect().color_brightness(-5, {0.0, 1.0, 0.0});
+    img.clean_selection();
+
+    col = {1.0, 0.0, 0.0};
+    img.select(EVERYTHING);
+    img.select(piml::WHERE_COLORS_MATCHES, col, 80);
+    img.select(CHANNEL_RED);
+    img.apply_effect().color_brightness(25, {1.0, 0.0, 0.0});
 
     img.select(CHANNEL_BLUE);
-    img.apply_effect().smoothing_brightness_opposite(-5);
-
-    // Apply a different treatment to the complementary region.
-    img.select(REMAINING);
-    img.select(CHANNEL_RED);
-    img.apply_effect().smoothing_brightness(-10);
+    img.apply_effect().color_brightness(-20, {1.0, 0.0, 0.0}, 60);
+    img.clean_selection();
 
     pimlio_write(img, "test_output.png");
 

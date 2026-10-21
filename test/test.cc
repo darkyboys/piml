@@ -141,8 +141,45 @@ int main(){
     //                        , {0.5, 0.5, 0.5}
     //                       ) * 100 << '\n' << '\n';
 
-    std::cout << "Diff: " <<get_distance_between_colors(
-                             {1.0, 1.0, 0.0}
-                           , {1.0, 0.0, 0.0}
-                          )*100<<'\n'<<'\n';
+    // std::cout << "Diff: " <<get_distance_between_colors(
+    //                          {1.0, 1.0, 0.0}
+    //                        , {1.0, 0.0, 0.0}
+    //                       )*100<<'\n'<<'\n';
+
+
+    // Color testing
+    auto img = pimlio_read("img/test.png");
+    img.select(EVERYTHING);
+    img.select(CHANNEL_RED);
+    img.apply_effect().brightness(-5);
+    img.clean_selection();
+    Color col = {0.0, 1.0, 0.0};
+    img.select(piml::WHERE_COLORS_MATCHES, col, 78);
+    // img.select(WARM_COLORS);
+    img.select(CHANNEL_RED);
+    // img.apply_effect().brightness(-100);
+    img.apply_effect().color_brightness(-5, {0.0, 1.0, 0.0});
+    // img.select(CHANNEL_BLUE);
+    // img.apply_effect().color_brightness(-5, {1.0, 0.0, 0.0}, 60);
+    img.clean_selection();
+
+    col = {1.0, 0.0, 0.0};
+    img.select(EVERYTHING);
+    img.select(piml::WHERE_COLORS_MATCHES, col, 80);
+    img.select(CHANNEL_RED);
+    img.apply_effect().color_brightness(25, {1.0, 0.0, 0.0});
+
+    img.select(CHANNEL_BLUE);
+    img.apply_effect().color_brightness(-20, {1.0, 0.0, 0.0}, 60);
+    img.clean_selection();
+    // img.apply_effect().brightness(100);
+
+    // img.select(REMAINING);
+    // img.select(CHANNEL_RED);
+    // img.apply_effect().color_brightness(100, {1.0, 0.0, 0.0}, 80);
+
+    pimlio_write(img, "test_output.png");
+
+    piml::Debugger db(img);
+    db.show_everything();
 }

@@ -507,7 +507,8 @@ namespace piml {
         WHERE_LUMA_BETWEEN,
         WHERE_LUMA_EQUALS,
         REMAINING,
-        WARM_COLORS
+        WARM_COLORS,
+        WHERE_COLORS_MATCHES
     };
 
     struct Log{
@@ -542,6 +543,12 @@ namespace piml {
 
             void brightness( // Applies the brightness to the image.
                 double value
+            );
+
+            void color_brightness( // Applies the brightness to the image.
+                double value,
+                const Color& color,
+                double distance = 80
             );
 
             void smoothing_brightness( // Lifts the darkest areas more compared to the lightest areas
@@ -645,6 +652,12 @@ namespace piml {
                 double b = 0.0,
                 double c = 0.0,
                 double e = 0.0
+            );
+
+            void select(
+                Selection selection,
+                const Color& color,
+                double distance = 80 // one of the best calibrated value for most of the images.
             );
 
             inline Effect& apply_effect(){ // Allows effect application via debugging
