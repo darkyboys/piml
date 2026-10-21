@@ -1,1 +1,1 @@
-rm -rf test_output.png objects exec_test build piml_cpubench bench
+rm -rf test_output.png objects exec_test build piml_cpubench bench "PIML - Advanced Teal & Orange (DEMO).cube"
