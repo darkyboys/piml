@@ -1,9 +1,10 @@
 #include "../piml.hh"
 #include "../pimlio.hh"
+#include <iostream>
 
 int main(){
     using namespace piml;
-    auto img = pimlio_read("img/test.png");
+    // auto img = pimlio_read("img/test.png");
     // Teal and orange shade
     // img.select(EVERYTHING);
     // img.apply_effect.brightness(5);
@@ -73,49 +74,75 @@ int main(){
     // img.select(CHANNEL_BLUE);
 
     // Advanced Teal and Orange effect with basic effects
-    img.select(EVERYTHING);
-    img.select(CHANNEL_RED);
-    img.apply_effect().brightness(-5);
-    img.clean_selection();
-    img.select(WARM_COLORS);
-    img.select(CHANNEL_RED);
+    // img.select(EVERYTHING);
+    // img.select(CHANNEL_RED);
+    // img.apply_effect().brightness(-5);
+    // img.clean_selection();
+    // img.select(WARM_COLORS);
+    // img.select(CHANNEL_RED);
 
-    img.apply_effect().smoothing_brightness_opposite(5);
+    // img.apply_effect().smoothing_brightness_opposite(5);
 
-    img.select(CHANNEL_BLUE);
-    img.apply_effect().smoothing_brightness_opposite(-5);
+    // img.select(CHANNEL_BLUE);
+    // img.apply_effect().smoothing_brightness_opposite(-5);
 
-    img.select(REMAINING);
-    img.select(CHANNEL_RED);
-    img.apply_effect().smoothing_brightness(-10);
+    // img.select(REMAINING);
+    // img.select(CHANNEL_RED);
+    // img.apply_effect().smoothing_brightness(-10);
     
 
 
-    pimlio_write(img, "test_output.png");
+    // pimlio_write(img, "test_output.png");
 
-    piml::Debugger db(img);
-    db.show_everything();
+    // piml::Debugger db(img);
+    // db.show_everything();
 
 
-    // Lut image
-    auto lut = pimlio_give_lut_image(64);
+    // // Lut image
+    // auto lut = pimlio_give_lut_image(64);
 
-    lut.select(EVERYTHING);
-    lut.select(CHANNEL_RED);
-    lut.apply_effect().brightness(-5);
-    lut.clean_selection();
-    lut.select(WARM_COLORS);
-    lut.select(CHANNEL_RED);
+    // lut.select(EVERYTHING);
+    // lut.select(CHANNEL_RED);
+    // lut.apply_effect().brightness(-5);
+    // lut.clean_selection();
+    // lut.select(WARM_COLORS);
+    // lut.select(CHANNEL_RED);
 
-    lut.apply_effect().smoothing_brightness_opposite(5);
+    // lut.apply_effect().smoothing_brightness_opposite(5);
 
-    lut.select(CHANNEL_BLUE);
-    lut.apply_effect().smoothing_brightness_opposite(-5);
+    // lut.select(CHANNEL_BLUE);
+    // lut.apply_effect().smoothing_brightness_opposite(-5);
 
-    lut.select(REMAINING);
-    lut.select(CHANNEL_RED);
-    lut.apply_effect().smoothing_brightness(-10);
+    // lut.select(REMAINING);
+    // lut.select(CHANNEL_RED);
+    // lut.apply_effect().smoothing_brightness(-10);
 
-    pimlio_export_lut(lut, "PIML - Advanced Teal & Orange (DEMO).cube", 64);
+    // pimlio_export_lut(lut, "PIML - Advanced Teal & Orange (DEMO).cube", 64);
     // db.show_pixels();
+
+
+    // std::cout << "Diff: " <<get_distance_between_colors(
+    //                          {1.0, 0.1, 0.0}
+    //                        , {1.0, 0.0, 0.0}
+    //                       )*100<<'\n'<<'\n';
+
+    // std::cout << "Diff: " << get_distance_between_colors(
+    //                          {1.0, 0.0, 0.0}  // Bright red
+    //                        , {0.5, 0.0, 0.0}  // Dark red
+    //                       ) * 100 << '\n' << '\n';
+
+    // std::cout << "Diff: " << get_distance_between_colors(
+    //                          {0.1, 0.1, 0.1}
+    //                        , {1.0, 1.0, 1.0}
+    //                       ) * 100 << '\n' << '\n';
+
+    // std::cout << "Diff: " << get_distance_between_colors(
+    //                          {1.0, 0.0, 0.0}
+    //                        , {0.5, 0.5, 0.5}
+    //                       ) * 100 << '\n' << '\n';
+
+    std::cout << "Diff: " <<get_distance_between_colors(
+                             {1.0, 1.0, 0.0}
+                           , {1.0, 0.0, 0.0}
+                          )*100<<'\n'<<'\n';
 }

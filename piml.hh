@@ -129,6 +129,7 @@ express Statement of Purpose.
 
 #include <vector>
 #include <string>
+#include <cmath>
 
 
 namespace piml {
@@ -395,6 +396,97 @@ namespace piml {
 
         Pixel& operator=(Pixel&& other) = default;
     };
+
+    struct Color{
+        double r, g, b;
+    };
+
+    inline double to_positive(double value){
+        if (value < 0) return (value*-1);
+        else return value;
+    }
+
+    inline double nonzero_value(double value, double result = 0.000001){
+        if (value == 0)
+            return result;
+        else return value;
+    }
+
+    inline double invert_zero(double value){
+        if (value == 0.0)
+            return 1.0;
+        return value;
+    }
+
+    /*
+    * Calculates the brightness-independent distance between two RGB colors.
+    *
+    * The algorithm compares the relative proportions of the RGB channels
+    * rather than their absolute intensities. This allows colors with the
+    * same RGB proportions but different overall brightness to have a
+    * distance of zero.
+    *
+    * To compare the colors, the algorithm first selects a channel that is
+    * nonzero in both colors, prioritizing red, then green, then blue.
+    * The first usable channel becomes the reference channel.
+    *
+    * Color A is then scaled proportionally so that its reference channel
+    * matches the corresponding channel in Color B. The same scaling factor
+    * is applied to all three channels, preserving Color A's RGB proportions.
+    *
+    * The Euclidean distance between the scaled Color A and Color B is
+    * calculated using their RGB channel differences. This distance is
+    * normalized by the magnitude of Color B and clamped to the range
+    * [0.0, 1.0], where 0.0 represents a perfect proportional match and
+    * 1.0 represents the maximum reported distance.
+    *
+    * If no common nonzero reference channel exists, identical colors
+    * return 0.0; otherwise, the algorithm returns 1.0.
+    *
+    * Note: Reference-channel priority can affect the result, and the
+    * normalized distance is a custom similarity metric, not a perceptual
+    * color difference measurement.
+    */
+    inline double get_distance_between_colors(
+        const Color& a, const Color& b)
+    {
+        double ar = a.r, ag = a.g, ab = a.b;
+        double br = b.r, bg = b.g, bb = b.b;
+
+        // Choose the first usable reference channel.
+        double scale = 0.0;
+
+        if (ar > 0.0 && br > 0.0)
+            scale = br / ar;
+        else if (ag > 0.0 && bg > 0.0)
+            scale = bg / ag;
+        else if (ab > 0.0 && bb > 0.0)
+            scale = bb / ab;
+        else
+            return (ar == br && ag == bg && ab == bb)
+                ? 0.0 : 1.0;
+
+        // Scale A to match B's reference channel.
+        const double dr = ar * scale - br;
+        const double dg = ag * scale - bg;
+        const double db = ab * scale - bb;
+
+        // Normalize distance to [0, 1].
+        const double distance =
+            std::sqrt(dr * dr + dg * dg + db * db);
+
+        const double magnitude =
+            std::sqrt(br * br + bg * bg + bb * bb);
+
+        if (magnitude == 0.0)
+            return distance == 0.0 ? 0.0 : 1.0;
+
+        return std::clamp(distance / magnitude, 0.0, 1.0);
+    }
+
+    inline double invert_positive(double value){
+        return 1.0 - std::clamp(value, 0.0, 1.0);
+    }
 
     enum Selection{
         EVERYTHING,
