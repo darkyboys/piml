@@ -569,6 +569,10 @@ namespace piml {
                 double point = 0.5
             );
 
+            void intensity_midtones( // Increase the brightness relatively to the image.
+                double value
+            );
+
             void intensity_corners( // Manipulates the corner point 0 and the corner point 1 on the linear intensity graph. 
                 double value,
                 double point = 0.5
@@ -587,6 +591,20 @@ namespace piml {
             void contrast( // Applies the linear contrast
                 double value,
                 double point = 0.5
+            );
+
+            void lift( // Lifts up the dark pixels linearly.
+                double value,
+                double point = 0.5
+            );
+            
+            void gain( // Lifts up the bright pixels linearly.
+                double value,
+                double point = 0.5
+            );
+
+            void midtones( // Increase the brightness relatively to the image.
+                double value
             );
 
 
@@ -637,6 +655,8 @@ namespace piml {
                     pixel_vector.push_back(px);
                 }
                 bitdepth = img.bitdepth;
+                height = img.height;
+                width = img.width;
                 if (debugging_allowed){ // Debugging
                     log(
                         "Image::Image",

@@ -149,6 +149,7 @@ int main(){
 
     // Color testing
     auto img = pimlio_read("img/test.png");
+    // auto img = pimlio_give_lut_image(64);
     img.select(EVERYTHING);
     img.select(CHANNEL_RED);
     img.apply_effect().brightness(-5);
@@ -172,6 +173,11 @@ int main(){
     img.select(CHANNEL_BLUE);
     img.apply_effect().color_brightness(-20, {1.0, 0.0, 0.0}, 60);
     img.clean_selection();
+
+    img.select(EVERYTHING);
+    // img.apply_effect().intensity_midtones(-100);
+    // img.apply_effect().midtones(-50);
+
     // img.apply_effect().brightness(100);
 
     // img.select(REMAINING);
@@ -179,6 +185,7 @@ int main(){
     // img.apply_effect().color_brightness(100, {1.0, 0.0, 0.0}, 80);
 
     pimlio_write(img, "test_output.png");
+    // pimlio_export_lut(img, "PIML - Advanced Teal & Orange 2 (DEMO).cube", 64);
 
     piml::Debugger db(img);
     db.show_everything();
